@@ -32,8 +32,14 @@ fi
 
 PENDING_OTHER=$(echo "${OUTPUT}" | cut -d ";" -f 1)
 PENDING_SECURITY=$(echo "${OUTPUT}" | cut -d ";" -f 2)
+REBOOT_REQUIRED="no"
+
+if [ -f "/var/run/reboot-required" ]; then
+  REBOOT_REQUIRED="yes"
+fi
 
 echo "status Pending updates: security ${PENDING_SECURITY}, other: ${PENDING_OTHER}"
 
 echo "metric pending_security uint32 ${PENDING_SECURITY}"
 echo "metric pending_other uint32 ${PENDING_OTHER}"
+echo "metric reboot_required string ${REBOOT_REQUIRED}"
