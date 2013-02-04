@@ -36,7 +36,7 @@ def check_usage(instance_id, threshold, region):
         print 'status error Unable to find instance', instance_id
         sys.exit(1)
 
-    # For usage lookup
+    # Force usage lookup
     matched_instance.get()
     database_size = matched_instance.volume['size']
     database_usage = matched_instance.volume['used']
