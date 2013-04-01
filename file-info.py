@@ -42,7 +42,7 @@ if (os.path.exists(path)):
 
 	print "metric age int", age
 	print "metric bytes int", size
-	print "metric mode int", mode
+	print "metric mode string", mode
 else:
 	print "status error target does not exist"
 
