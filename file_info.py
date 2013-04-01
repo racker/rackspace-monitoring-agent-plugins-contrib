@@ -5,9 +5,9 @@ Rackspace Cloud Monitoring plugin to provide file/directory information.
 The three metrics returned for the target:
 - age, calculated from ctime
 - size, in bytes
-- permissions, octal 
+- permissions, octal
 
-Copyright 2013 Steve Katen <steve.katen@rackspace.com> 
+Copyright 2013 Steve Katen <steve.katen@rackspace.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,28 +21,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-import sys, os, time
+import sys
+import os
+import time
+
 
 def mode(mode):
-	return mode & 0777
+    return mode & 0777
 
 if (len(sys.argv) == 2):
-       	path = sys.argv[1]
+    path = sys.argv[1]
 else:
-        print "Requires a full path to the target passed as an argument"
-        sys.exit(0)
+    print "Requires a full path to the target passed as an argument"
+    sys.exit(0)
 
 if (os.path.exists(path)):
-	print "status ok target exists"
+    print "status ok target exists"
 
-	details = os.stat(path)
-	age = int(time.time() - details.st_ctime)
-	size = int(details.st_size)
-	mode = int(oct(mode(details.st_mode)))
+    details = os.stat(path)
+    age = int(time.time() - details.st_ctime)
+    size = int(details.st_size)
+    mode = int(oct(mode(details.st_mode)))
 
-	print "metric age int", age
-	print "metric bytes int", size
-	print "metric mode string", mode
+    print "metric age int", age
+    print "metric bytes int", size
+    print "metric mode string", mode
 else:
-	print "status error target does not exist"
-
+    print "status error target does not exist"
