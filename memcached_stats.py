@@ -46,19 +46,19 @@ else:
     print "Requires an IP Address + hostname passed as arguments"
     sys.exit(0)
 
-stats = memcached_stats(host, port)
+s = memcached_stats(host, port)
 
-if stats:
+if s:
     print "status ok memcached statistics generated"
-    print "metric uptime int", stats['uptime']
-    print "metric curr_connections int", stats['curr_connections']
-    print "metric listen_disabled_num int", stats['listen_disabled_num']
-    print "metric curr_items int", stats['curr_items']
-    print "metric total_items int", stats['total_items']
-    print "metric evictions int", stats['evictions']
-    print "metric hit_percent float", hit_percent(int(stats['get_hits']),
-                                                int(stats['get_misses']))
-    print "metric fill_percent float", fill_percent(int(stats['bytes']),
-                                                  int(stats['limit_maxbytes']))
+    print "metric uptime int", s['uptime']
+    print "metric curr_connections int", s['curr_connections']
+    print "metric listen_disabled_num int", s['listen_disabled_num']
+    print "metric curr_items int", s['curr_items']
+    print "metric total_items int", s['total_items']
+    print "metric evictions int", s['evictions']
+    print "metric hit_percent float", hit_percent(int(s['get_hits']),
+                                                  int(s['get_misses']))
+    print "metric fill_percent float", fill_percent(int(s['bytes']),
+                                                    int(s['limit_maxbytes']))
 else:
     print "status error unable to obtain statistics"
