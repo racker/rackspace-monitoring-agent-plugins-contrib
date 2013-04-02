@@ -26,15 +26,17 @@ import os
 import time
 
 
-if len(sys.argv) == 2:
+def main():
+    if len(sys.argv) != 2:
+        print "Requires a full path to the target passed as an argument"
+        sys.exit(0)
+
     path = sys.argv[1]
-else:
-    print "Requires a full path to the target passed as an argument"
-    sys.exit(0)
+    if not os.path.exists(path):
+        print "status error target does not exist"
+        sys.exit(0)
 
-if os.path.exists(path):
     print "status ok target exists"
-
     details = os.stat(path)
     age = int(time.time() - details.st_ctime)
     size = details.st_size
@@ -43,5 +45,6 @@ if os.path.exists(path):
     print "metric age int", age
     print "metric bytes int", size
     print "metric mode string", mode
-else:
-    print "status error target does not exist"
+
+if __name__ == '__main__':
+    main()

@@ -39,16 +39,20 @@ def hit_percent(hits, misses):
 def fill_percent(used, total):
     return float(used / total)
 
-if len(sys.argv) == 3:
+
+def main():
+    if len(sys.argv) != 3:
+        print "Requires an IP Address + hostname passed as arguments"
+        sys.exit(0)
+
     host = sys.argv[1]
     port = sys.argv[2]
-else:
-    print "Requires an IP Address + hostname passed as arguments"
-    sys.exit(0)
+    s = memcached_stats(host, port)
 
-s = memcached_stats(host, port)
+    if not s:
+        print "status error unable to obtain statistics"
+        sys.exit(0)
 
-if s:
     print "status ok memcached statistics generated"
     print "metric uptime int", s['uptime']
     print "metric curr_connections int", s['curr_connections']
@@ -60,5 +64,6 @@ if s:
                                                   int(s['get_misses']))
     print "metric fill_percent float", fill_percent(int(s['bytes']),
                                                     int(s['limit_maxbytes']))
-else:
-    print "status error unable to obtain statistics"
+
+if __name__ == '__main__':
+    main()
