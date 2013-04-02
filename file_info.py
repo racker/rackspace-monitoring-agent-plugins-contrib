@@ -26,22 +26,19 @@ import os
 import time
 
 
-def mode(mode):
-    return mode & 0777
-
-if (len(sys.argv) == 2):
+if len(sys.argv) == 2:
     path = sys.argv[1]
 else:
     print "Requires a full path to the target passed as an argument"
     sys.exit(0)
 
-if (os.path.exists(path)):
+if os.path.exists(path):
     print "status ok target exists"
 
     details = os.stat(path)
     age = int(time.time() - details.st_ctime)
-    size = int(details.st_size)
-    mode = int(oct(mode(details.st_mode)))
+    size = details.st_size
+    mode = oct(details.st_mode & 0777)
 
     print "metric age int", age
     print "metric bytes int", size

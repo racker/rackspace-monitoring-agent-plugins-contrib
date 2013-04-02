@@ -30,16 +30,16 @@ def memcached_stats(host, port):
 
 def hit_percent(hits, misses):
     total = hits + misses
-    if (total > 0):
-        return int(100 * float(hits) / float(total))
+    if total > 0:
+        return 100 * float(hits) / float(total)
     else:
-        return 0
+        return 0.0
 
 
 def fill_percent(used, total):
-    return int(used / total)
+    return float(used / total)
 
-if (len(sys.argv) == 3):
+if len(sys.argv) == 3:
     host = sys.argv[1]
     port = sys.argv[2]
 else:
@@ -48,7 +48,7 @@ else:
 
 stats = memcached_stats(host, port)
 
-if (stats):
+if stats:
     print "status ok memcached statistics generated"
     print "metric uptime int", stats['uptime']
     print "metric curr_connections int", stats['curr_connections']
@@ -56,9 +56,9 @@ if (stats):
     print "metric curr_items int", stats['curr_items']
     print "metric total_items int", stats['total_items']
     print "metric evictions int", stats['evictions']
-    print "metric hit_percent int", hit_percent(int(stats['get_hits']),
+    print "metric hit_percent float", hit_percent(int(stats['get_hits']),
                                                 int(stats['get_misses']))
-    print "metric fill_percent int", fill_percent(int(stats['bytes']),
+    print "metric fill_percent float", fill_percent(int(stats['bytes']),
                                                   int(stats['limit_maxbytes']))
 else:
     print "status error unable to obtain statistics"
