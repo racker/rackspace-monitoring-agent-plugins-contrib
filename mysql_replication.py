@@ -78,13 +78,15 @@ if OUTPUT != "":
             SLAVE_STATUS["Slave_SQL_Running"] == "Yes" and \
             SLAVE_STATUS["Last_Errno"] == "0":
 
-        print "metric SLAVE_STATUS string ONLINE\n" \
+        print "status OK\n" \
+            "metric SLAVE_STATUS string ONLINE\n" \
             "metric SECONDS_BEHIND_MASTER int " \
             + SLAVE_STATUS["Seconds_Behind_Master"]
     else:
-        print "metric SLAVE_STATUS string OFFLINE\n" \
+        print "status OK\n" \
+            "metric SLAVE_STATUS string OFFLINE\n" \
             "metric SECONDS_BEHIND_MASTER int " \
             + SLAVE_STATUS["Seconds_Behind_Master"]
 
 else:
-    print "metric SLAVE_STATUS string NOT_CONFIGURED"
+    print "status ERROR\nmetric SLAVE_STATUS string NOT_CONFIGURED"
