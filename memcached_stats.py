@@ -19,14 +19,15 @@ limitations under the License.
 import sys
 import telnetlib
 import re
+import socket
 
 
 def memcached_stats(host, port):
     regex = re.compile(ur"STAT (.*) (.*)\r")
     try:
         c = telnetlib.Telnet(host, port)
-    except:
-        return None
+    except socket.error:
+        return
     else:
         c.write("stats\n")
         return dict(regex.findall(c.read_until('END')))
@@ -46,7 +47,7 @@ def fill_percent(used, total):
 
 def main():
     if len(sys.argv) != 3:
-        print "Usage: %s <host> <port>" % sys.argv[0] 
+        print "Usage: %s <host> <port>" % sys.argv[0]
         sys.exit(0)
 
     host = sys.argv[1]
@@ -54,7 +55,7 @@ def main():
     s = memcached_stats(host, port)
 
     if not s:
-        print "status error unable to obtain statistics"
+        print "status error unable to generate statistics"
         sys.exit(0)
 
     print "status ok memcached statistics generated"
