@@ -23,9 +23,13 @@ import re
 
 def memcached_stats(host, port):
     regex = re.compile(ur"STAT (.*) (.*)\r")
-    client = telnetlib.Telnet(host, port)
-    client.write("stats\n")
-    return dict(regex.findall(client.read_until('END')))
+    try:
+        c = telnetlib.Telnet(host, port)
+    except:
+        return None
+    else:
+        c.write("stats\n")
+        return dict(regex.findall(c.read_until('END')))
 
 
 def hit_percent(hits, misses):
@@ -42,7 +46,7 @@ def fill_percent(used, total):
 
 def main():
     if len(sys.argv) != 3:
-        print "Requires an IP Address + hostname passed as arguments"
+        print "Usage: %s <host> <port>" % sys.argv[0] 
         sys.exit(0)
 
     host = sys.argv[1]
