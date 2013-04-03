@@ -21,12 +21,13 @@ limitations under the License.
 """
 import sys
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 
 
 def mongodb_stats(host, port):
     try:
         c = MongoClient(host, port)
-    except:
+    except ConnectionFailure:
         return None
     else:
         return c.test.command("serverStatus")
@@ -57,14 +58,12 @@ def main():
     print "metric index_misses int", s['indexCounters']['misses']
     print "metric index_percent int", float(s['indexCounters']['hits']
                                             / s['indexCounters']['accesses'])
-    try:
-        s['repl']
-    except:
-        print "metric is_replicating string false"
-    else:
+    if 'repl' in s:
         print "metric is_replicating string true"
         print "metric is_master string", s['repl']['ismaster']
         print "metric is_secondary string", s['repl']['secondary']
+    else:
+        print "metric is_replicating string false"
 
 if __name__ == '__main__':
     main()
