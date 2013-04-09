@@ -24,9 +24,17 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 
-def mongodb_stats(host, port):
+def mongodb_stats(host, p, database, username, password):
+    port = int(p)
     try:
-        c = MongoClient(host, port)
+        if (username and password and database):
+                c = MongoClient("mongodb://"+username+":"+password+"@"+host+"/"+database, port)
+        elif (username and password):
+                c = MongoClient('mongodb://'+username+':'+password+'@'+host+'/', port)
+        elif (database):
+                c = MongoClient('mongodb://'+host+'/', port)
+        else:
+                c = MongoClient(host, port)
     except ConnectionFailure:
         return None
     else:
@@ -34,14 +42,11 @@ def mongodb_stats(host, port):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print "Usage: %s <host> <port>" % sys.argv[0]
+    if len(sys.argv) != 6:
+        print "Usage: %s <host> <port> <database> <username> <password> " % sys.argv[0]
         sys.exit(0)
 
-    host = sys.argv[1]
-    port = int(sys.argv[2])
-
-    s = mongodb_stats(host, port)
+    s = mongodb_stats(*sys.argv[1:])
 
     if not s:
         print "status error unable to generate statistics"
