@@ -44,7 +44,7 @@ def main():
     s = mongodb_stats(host, port)
 
     if not s:
-        print "status error unable to generate statistics"
+        print "status err unable to generate statistics"
         sys.exit(0)
 
     print "status ok mongodb statistics generated"
