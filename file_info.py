@@ -33,7 +33,7 @@ def main():
 
     path = sys.argv[1]
     if not os.path.exists(path):
-        print "status error target does not exist"
+        print "status err target does not exist"
         sys.exit(0)
 
     print "status ok target exists"
