@@ -33,7 +33,7 @@ def check_usage(instance_id, threshold, region):
         if instance.id == instance_id:
             matched_instance = instance
     if not matched_instance:
-        print 'status error Unable to find instance', instance_id
+        print 'status err Unable to find instance', instance_id
         sys.exit(1)
 
     # Force usage lookup
@@ -43,7 +43,7 @@ def check_usage(instance_id, threshold, region):
     percentage_used = database_usage / database_size
 
     if percentage_used >= threshold:
-        print 'status error usage over threshold'
+        print 'status err usage over threshold'
     else:
         print 'status ok usage within threshold'
 
