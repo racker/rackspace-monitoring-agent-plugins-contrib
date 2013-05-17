@@ -54,7 +54,7 @@ end
 
 fail "You must specify the haproxy stats socket!" if options[:sock].nil?
 
-pid = `pidof haproxy`.chomp.to_i || fail("status HAProxy is not running!")
+pid = `pidof haproxy`.chomp.to_i || fail("HAProxy is not running!")
 
 begin
   conn = `lsof -ln -i |grep -c #{pid}`.chomp.to_i
