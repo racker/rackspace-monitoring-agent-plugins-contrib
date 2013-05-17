@@ -54,7 +54,7 @@ options = {}
 args = ARGV.dup
 
 OptionParser.new do |o|
-  o.banner = "Usage: check_agent_public.rb [options]"
+  o.banner = "Usage: #{$0} [options]"
   o.on('-o', '--my-option OPTION', 'Set OPTION to be a valid option') do |s| 
     options[:option] = s 
   end
