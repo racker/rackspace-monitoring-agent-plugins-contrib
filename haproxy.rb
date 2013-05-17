@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+## Rackspace Cloud Monitoring Plug-In
+## HAProxy Stats
+#
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <lo@petalphile.com> wrote this file. As long as you retain this notice you
@@ -10,7 +13,25 @@
 #  - Takes HAProxy stats and grabs connections, rate, and check time
 #    for every listener and every backend server, and prints it using
 #    Rackspace Cloud Montioring metric lines
-
+#
+# Usage:
+# Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
+#
+# The following is an example 'criteria' for a Rackspace Monitoring Alarm:
+#
+# if (metric['CONNECTIONS'] == 0) {
+#   return new AlarmStatus(CRITICAL, 'No connections to your HAProxy!
+#
+# if (metric['CONNECTIONS'] < '10') {
+#   return new AlarmStatus(WARNING, 'Less than 10 connections to your HAProxy!');
+# }
+#
+# return new AlarmStatus(OK, 'HAProxy connections normal');
+#
+# Please note that you will need to adjust the thresholds based on workload.
+# Also, there are other metrics this plugin reports you may find useful, but
+# the metricnames for these will vary based on your HAProxy cluster name.
+#
 
 def fail(status="Unknown failure")
   puts "status #{status}"
