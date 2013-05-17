@@ -21,7 +21,7 @@ end
 def output_success
   puts "status Your new plugin is reporting metrics!"
   @metrics.each do |name,v|
-    puts "#{name} #{v[:type]} #{v[:value]}"
+    puts "metric #{name} #{v[:type]} #{v[:value]}"
   end
 end
 
@@ -45,7 +45,7 @@ OptionParser.new do |o|
   o.parse!(args)
 end
 
-# Error handling by option/input validation and begin;rescue;end is reccomended
+# Error handling by option/input validation and begin;rescue;end is recommended
 if false
   fail "I checked to make sure this would succeed, and it didn't"
 end
