@@ -27,7 +27,7 @@ end
 def output_success
   puts "status HAProxy is running and reporting metrics!"
   @metrics.each do |name,v|
-    puts "#{name} #{v[:type]} #{v[:value]}"
+    puts "metric #{name} #{v[:type]} #{v[:value]}"
   end
 end
 
