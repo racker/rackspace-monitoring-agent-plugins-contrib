@@ -65,7 +65,7 @@ options = {}
 args = ARGV.dup
 
 OptionParser.new do |o|
-  o.banner = "Usage: check_agent_public.rb [options]"
+  o.banner = "Usage: #{$0} [options]"
   o.on('-s', '--stats-socket SOCKET', 'Specify the HAProxy stats socket') do |s| 
     options[:sock] = s 
   end
