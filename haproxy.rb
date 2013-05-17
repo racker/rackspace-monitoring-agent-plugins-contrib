@@ -62,7 +62,7 @@ begin
   conn = conn - 2
   metric("connections","int",conn.to_i)
 rescue
-  fail "Error while getting connection counts!"
+  fail "Unable to get getting connection counts!"
 end
 
 begin
@@ -81,7 +81,7 @@ begin
   end
   ctl.close
 rescue
-  fail "Error while reading from #{options[:sock]}!"
+  fail "Problem reading from #{options[:sock]}!"
 end
 
 output_success
