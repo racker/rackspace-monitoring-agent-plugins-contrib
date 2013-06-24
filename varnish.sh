@@ -31,6 +31,15 @@
 # See https://github.com/robszumski/rackspace-monitoring-varnish for a readme
 # and more information
 
+# check if service is running
+SERVICE=varnish
+if P=$(pgrep $SERVICE | wc -l)
+then
+    echo "status $SERVICE is running ($P instances)"
+else
+    echo "status $SERVICE is not running"
+fi
+
 # calculate hit percent
 hits=$(/usr/bin/varnishstat -1 -f cache_hit | awk '$2>0 {print $2}')
 misses=$(/usr/bin/varnishstat -1 -f cache_miss | awk '$2>0 {print $2}')
