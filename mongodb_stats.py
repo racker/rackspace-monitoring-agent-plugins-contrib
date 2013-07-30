@@ -24,9 +24,17 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 
-def mongodb_stats(host, port):
+def mongodb_stats(host, p, database, username, password):
+    port = int(p)
     try:
-        c = MongoClient(host, port)
+        if (username and password and database):
+                c = MongoClient("mongodb://"+username+":"+password+"@"+host+"/"+database, port)
+        elif (username and password):
+                c = MongoClient('mongodb://'+username+':'+password+'@'+host+'/', port)
+        elif (database):
+                c = MongoClient('mongodb://'+host+'/', port)
+        else:
+                c = MongoClient(host, port)
     except ConnectionFailure:
         return None
     else:
@@ -34,14 +42,11 @@ def mongodb_stats(host, port):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print "Usage: %s <host> <port>" % sys.argv[0]
+    if len(sys.argv) != 6:
+        print "Usage: %s <host> <port> <database> <username> <password> " % sys.argv[0]
         sys.exit(0)
 
-    host = sys.argv[1]
-    port = int(sys.argv[2])
-
-    s = mongodb_stats(host, port)
+    s = mongodb_stats(*sys.argv[1:])
 
     if not s:
         print "status err unable to generate statistics"
@@ -53,11 +58,18 @@ def main():
     print "metric conn_current int", s['connections']['current']
     print "metric conn_percent float", float(s['connections']['current']
                                              / s['connections']['available'])
-    print "metric mem_mapped int", s['mem']['mapped']
-    print "metric index_hits int", s['indexCounters']['hits']
-    print "metric index_misses int", s['indexCounters']['misses']
-    print "metric index_percent int", float(s['indexCounters']['hits']
+    if (s['indexCounters']['btree']):
+        print "metric index_hits int", s['indexCounters']['btree']['hits']
+        print "metric index_misses int", s['indexCounters']['btree']['misses']
+        print "metric index_percent int", float(s['indexCounters']['btree']['hits']
+                                            / s['indexCounters']['btree']['accesses'])
+    else:
+        print s['indexCounters']['btree']['hits']
+        print "metric index_hits int", s['indexCounters']['hits']
+        print "metric index_misses int", s['indexCounters']['misses']
+        print "metric index_percent int", float(s['indexCounters']['hits']
                                             / s['indexCounters']['accesses'])
+
     if 'repl' in s:
         print "metric is_replicating string true"
         print "metric is_master string", s['repl']['ismaster']
