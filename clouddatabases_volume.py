@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Rackspace Cloud Monitoring plugin to alert on Cloud Databases disk usage.
 
