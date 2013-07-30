@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''Rackspace Cloud Servers RAM usage monitor'''
-
+'''Pulls metrics from API for Total RAM allowed for Cloud Servers and Total RAM currently used (for API limits) and returns percent_ram_used metric to Cloud Monitoring API.  Threshold percentage of when to set status to warning is set at command line argument along with username and api key'''
 # Copyright 2013 Rackspace
 
 # All Rights Reserved.
