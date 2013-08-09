@@ -28,8 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# See https://github.com/robszumski/rackspace-monitoring-varnish for a readme
-# and more information
 #
 # Verify the current status of lsyncd
 # *****************
