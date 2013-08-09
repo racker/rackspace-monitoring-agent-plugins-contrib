@@ -28,8 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# See https://github.com/robszumski/rackspace-monitoring-varnish for a readme
-# and more information
 #
 # Verify the current status of lsyncd
 # *****************
@@ -69,14 +67,26 @@ current_inotify_watches=$(awk '{print $3}' <(sysctl fs.inotify.max_user_watches)
 # This value may need to be modified based on the amount of different directories being
 # watched
 if [ -e /etc/lsyncd.lua ]; then
-	SOURCE=$(grep "source" /etc/lsyncd.lua | head -1 | cut -d'=' -f2 | sed -e "s/\"//g" -e "s/,//g")
+	lsyncd_conf_file="/etc/lsyncd.lua"
 elif [ -e /etc/lsyncd.conf ]; then
-	SOURCE=$(grep "source" /etc/lsyncd.conf | head -1 | cut -d'=' -f2 | sed -e "s/\"//g" -e "s/,//g")
+	lsyncd_conf_file="/etc/lsyncd.conf"
 else
 	echo "status ${SERVICE} not installed"
 fi
+# Store the values we pull from the configuration file to an array
+watch_list=()
+for dir_watch in $(grep "source=\"/" ${lsyncd_conf_file}); do
+	current_dir=$(echo $dir_watch | cut -d'=' -f2| sed -e "s/\"//g" -e "s/,//g")
+	watch_list=("${watch_list[@]}" "${current_dir}")
+done
+# Force unique values in this array - not calculating for multiple directories
+sorted_unique_dirs=$(echo "${watch_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 # calculate current directories to watch
-current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1}')
+current_directories_to_watch=0
+for SOURCE in ${sorted_unique_dirs[@]}; do
+	current_directories_to_watch=$(echo ${current_directories_to_watch}+$(find ${SOURCE} -type d | wc -l | awk '{print $1}') | bc -l)
+done 
+#current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1}')
 # calculate percenentage of total
 current_percentage=$(echo "${current_directories_to_watch}/${current_inotify_watches}" | bc -l | awk '{printf "%f", $1*100}')
 
