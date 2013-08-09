@@ -76,7 +76,7 @@ else
 	echo "status ${SERVICE} not installed"
 fi
 # calculate current directories to watch
-current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1*2}')
+current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1}')
 # calculate percenentage of total
 current_percentage=$(echo "${current_directories_to_watch}/${current_inotify_watches}" | bc -l | awk '{printf "%f", $1*100}')
 
