@@ -33,6 +33,8 @@ def main():
                         help='API Percent Used Threshold, integer between '
                              '1-99',
                         required=True)
+    parser.add_argument('-r', '--region', help='Rackspace Regional Datacenter',
+                                required=True)
     parser.add_argument('--human',
                         help='Format output for humans, not Cloud Monitoring',
                         action='store_true')
@@ -44,14 +46,14 @@ def main():
     pyrax.set_setting("identity_type", "rackspace")
     pyrax.set_credentials(args.username, args.apikey)
 
-    (ram_used, ram_allowed) = getlimits()
+    (ram_used, ram_allowed) = getlimits(args.region)
     display_usage(ram_used, ram_allowed, args.maxthreshold, args.human)
 
 
-def getlimits():
+def getlimits(region):
     '''Returns the RAM usage and limits'''
     compute = pyrax.cloudservers
-    cslimits = compute.limits.get()
+    cslimits = compute.limits.get(region)
     # Convert the generator to a list
     cslimits_list = [rate for rate in cslimits.absolute]
     # Pull out max_ram api limit and total used ram from list
