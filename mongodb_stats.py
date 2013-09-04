@@ -56,8 +56,11 @@ def main():
     print "metric mem_mapped int", s['mem']['mapped']
     print "metric index_hits int", s['indexCounters']['hits']
     print "metric index_misses int", s['indexCounters']['misses']
-    print "metric index_percent int", float(s['indexCounters']['hits']
+    try:
+        print "metric index_percent int", float(s['indexCounters']['hits']
                                             / s['indexCounters']['accesses'])
+    except ZeroDivisionError:
+        print "metric index_percent int 0"
     if 'repl' in s:
         print "metric is_replicating string true"
         print "metric is_master string", s['repl']['ismaster']
