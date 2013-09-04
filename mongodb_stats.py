@@ -60,7 +60,7 @@ def main():
         print "metric index_percent int", float(s['indexCounters']['hits']
                                             / s['indexCounters']['accesses'])
     except ZeroDivisionError:
-        print "metric index_percent int", 0
+        print "metric index_percent int 0"
     if 'repl' in s:
         print "metric is_replicating string true"
         print "metric is_master string", s['repl']['ismaster']
