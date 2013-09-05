@@ -20,14 +20,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import sys
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+try:
+    from pymongo import MongoClient as Client
+except ImportError:
+    from pymongo import Connection as Client
+from pymongo.errors import ConnectionFailure, AutoReconnect
 
 
 def mongodb_stats(host, port):
     try:
-        c = MongoClient(host, port)
-    except ConnectionFailure:
+        c = Client(host, port)
+    except ConnectionFailure, AutoReconnect:
         return None
     else:
         return c.test.command("serverStatus")
