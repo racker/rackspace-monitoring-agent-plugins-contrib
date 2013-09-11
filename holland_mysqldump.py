@@ -21,7 +21,7 @@
 # Also monitors the dump file taken by Holland and the Holland logs.
 #
 # Requirements:
-# Python 2.5 or greater
+# Python 2.4 or greater
 #
 # Usage:
 # Place script in /usr/lib/rackspace-monitoring-agent/plugins
@@ -31,22 +31,18 @@
 # if (metric['sql_ping_succeeds'] == 'false') { 
 #  return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL is not running.'); 
 # } 
-# 
 # if (metric['sql_creds_exist'] == 'false') { 
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials file \
 #            does not exist.'); 
 # } 
-# 
 # if (metric['sql_status_succeeds'] == 'false') { 
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials do \
 #            not authenticate.'); 
 # } 
-# 
 # if (metric['dump_age'] > 172800) { 
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: mysqldump file is older \
 #            than 2d.'); 
 # } 
-# 
 # if (metric['error_count'] > 0) { 
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: #{last_error}.'); 
 # } 
