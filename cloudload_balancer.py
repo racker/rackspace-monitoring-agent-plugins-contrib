@@ -81,4 +81,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("region", help="Cloud region, e.g. DFW or ORD")
     args = parser.parse_args()
-    check_usage(args.region)
+    check_usage(args.region.upper())
