@@ -32,6 +32,8 @@ STATS = [
 
 
 def check_usage(region):
+    first = True
+    found = False
     pyrax.settings.set('identity_type', 'rackspace')
     pyrax.set_credential_file(
         os.path.expanduser("~/.rackspace_cloud_credentials"),
@@ -39,15 +41,18 @@ def check_usage(region):
 
     clb = pyrax.cloud_loadbalancers
 
-    print 'status ok'
-
     for instance in clb.list():
+        found = True
         mgr = instance.manager
         status = instance.status
         nodes = instance.nodes
         name = instance.name.lower().replace('-', '_')
         usage = mgr.get_usage(instance)
         usage = usage['loadBalancerUsageRecords'][-1]
+
+        if first:
+            print 'status ok'
+            first = False
 
         if status == 'ACTIVE':
             print 'metric %s.status float 100.0' % (name)
@@ -75,6 +80,9 @@ def check_usage(region):
         print 'metric %s.online_nodes int %s' % (name, online_nodes)
         print 'metric %s.offline_nodes int %s' % (name, offline_nodes)
         print 'metric %s.draining_nodes int %s' % (name, draining_nodes)
+
+    if not found:
+        print 'status bad no instances found'
 
 
 if __name__ == "__main__":
