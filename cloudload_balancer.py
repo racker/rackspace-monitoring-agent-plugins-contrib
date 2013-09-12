@@ -23,11 +23,21 @@ import os
 import argparse
 import pyrax
 
-STATS = [
+USAGE_STATS = [
     {'key': 'incoming', 'ref': 'incomingTransfer', 'unit': 'int'},
     {'key': 'incoming_ssl', 'ref': 'incomingTransferSsl', 'unit': 'int'},
     {'key': 'outgoing', 'ref': 'outgoingTransfer', 'unit': 'int'},
     {'key': 'outgoing_ssl', 'ref': 'outgoingTransferSsl', 'unit': 'int'}
+]
+
+
+STATS = [
+    {'key': 'connect_timeout', 'ref': 'connectTimeOut', 'unit': 'int'},
+    {'key': 'connect_error', 'ref': 'connectError', 'unit': 'int'},
+    {'key': 'connect_failure', 'ref': 'connectFailure', 'unit': 'int'},
+    {'key': 'data_timed_out', 'ref': 'dataTimedOut', 'unit': 'int'},
+    {'key': 'keep_alive_timed_out', 'ref': 'keepAliveTimedOut', 'unit': 'int'},
+    {'key': 'max_conns', 'ref': 'maxConn', 'unit': 'int'}
 ]
 
 
@@ -58,7 +68,7 @@ def check_usage(instance_id, region):
     else:
         print 'metric %s.status float 0.0' % (name)
 
-    for stat in STATS:
+    for stat in USAGE_STATS:
         print 'metric %s.%s %s %s' % \
             (name, stat['key'], stat['unit'], usage[stat['ref']])
 
@@ -79,6 +89,11 @@ def check_usage(instance_id, region):
     print 'metric %s.online_nodes int %s' % (name, online_nodes)
     print 'metric %s.offline_nodes int %s' % (name, offline_nodes)
     print 'metric %s.draining_nodes int %s' % (name, draining_nodes)
+
+    stats = mgr.get_stats(instance)
+    for stat in STATS:
+        print 'metric %s.%s %s %s' % \
+            (name, stat['key'], stat['unit'], stats[stat['ref']])
 
 
 if __name__ == "__main__":
