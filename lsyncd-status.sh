@@ -53,7 +53,7 @@
 
 
 SERVICE="lsyncd"
-RESULT=$(pgrep ${SERVICE})
+RESULT=$(pgrep -x ${SERVICE})
 if [[ "${RESULT:-null}" = null ]]; then
 	echo "metric ${SERVICE}_status string notrunning"
 else
