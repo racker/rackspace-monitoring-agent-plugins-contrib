@@ -72,7 +72,8 @@ if OUTPUT != "":
 
     SLAVE_STATUS = {}
     for i in SHOW_STATUS_LIST:
-        SLAVE_STATUS[i.split(':')[0].strip()] = i.split(':')[1].strip()
+        if ":" in i:
+            SLAVE_STATUS[i.split(':')[0].strip()] = i.split(':')[1].strip()
 
     if SLAVE_STATUS["Slave_IO_Running"] == "Yes" and \
             SLAVE_STATUS["Slave_SQL_Running"] == "Yes" and \
