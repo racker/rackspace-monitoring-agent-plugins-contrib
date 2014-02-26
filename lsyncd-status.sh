@@ -71,7 +71,7 @@ if [ -e /etc/lsyncd.lua ]; then
 elif [ -e /etc/lsyncd.conf ]; then
 	lsyncd_conf_file="/etc/lsyncd.conf"
 elif [ -e /etc/lsyncd/lsyncd.conf ]; then
-        lsyncd_conf_file="/etc/lsyncd/lsyncd.con"
+        lsyncd_conf_file="/etc/lsyncd/lsyncd.conf"
 else
 	echo "status ${SERVICE} not installed"
 fi
