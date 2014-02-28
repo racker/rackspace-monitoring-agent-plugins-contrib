@@ -16,7 +16,7 @@ report = stat.read()
 
 if report =="mysqld is alive\n":
     print "status ok ok"
-    sys.exit(1)
+    sys.exit(0)
 else:
     print "status error"
-    sys.exit(0)
+    sys.exit(1)
