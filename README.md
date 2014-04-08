@@ -1,7 +1,7 @@
 # Rackspace Monitoring Agent Custom plugins
 
 This repository contains contributed custom plugins for the Rackspace Cloud
-Monitoring agent.
+Monitoring agent. For details about installing plugins, see [agent plugin check documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/appendix-check-types-agent.html#section-ct-agent.plugin).
 
 ## How to Contribute
 
