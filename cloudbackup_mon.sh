@@ -78,7 +78,7 @@ username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}'
 agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId | awk '{print $3}' | sed -e 's/,//g'`
 
 # Get token
-token=`curl -s -I -H "X-Auth-Key: $1" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep X-Auth-Token |awk {'print $2'}`
+token=`curl -s -I -H "X-Auth-Key: $1" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep -vi 'vary:' | grep -i X-Auth-Token |awk {'print $2'}`
 
 # Get report ID:
 last_report=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud.com/v1.0/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
