@@ -77,7 +77,7 @@ else
 fi
 # Store the values we pull from the configuration file to an array
 watch_list=()
-for dir_watch in $(grep "source=\"/" ${lsyncd_conf_file}); do
+for dir_watch in $(grep "source=\"/" ${lsyncd_conf_file} | grep -ve '^[ ]*--' ); do
 	current_dir=$(echo $dir_watch | cut -d'=' -f2| sed -e "s/\"//g" -e "s/,//g")
 	watch_list=("${watch_list[@]}" "${current_dir}")
 done
