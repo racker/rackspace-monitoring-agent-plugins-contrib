@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
-Rackspace Cloud Monitoring plugin to provide cloud load balancer
+Rackspace Cloud Monitoring plugin to monitor number of messages in Cloud Queues 
+
+Useful for triggering Autoscale webhooks based on number os messages in a Cloud Queue
 
 Requirement:
 pyrax - https://github.com/rackspace/pyrax
