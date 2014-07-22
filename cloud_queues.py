@@ -36,7 +36,7 @@ from pprint import pprint
 def get_queue_stats(queueName):
     
     pyrax.settings.set('identity_type', 'rackspace')
-    pyrax.set_credential_file(os.path.expanduser("~/.rackspace_cloud_credentials")
+    pyrax.set_credential_file(os.path.expanduser("~/.rackspace_cloud_credentials"))
 
     try:
         cq = pyrax.queues
