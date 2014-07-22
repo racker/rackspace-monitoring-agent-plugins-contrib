@@ -52,7 +52,7 @@ def get_queue_stats(queueName):
         return
    
     for key,value in stats.items():
-        if key != 'oldest' or key != 'newest':
+        if type(value) is int:
             print 'metric queue.%s int %s' % (key, value)
 
 
