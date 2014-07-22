@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 """
 Rackspace Cloud Monitoring plugin to monitor number of messages in Cloud Queues 
 
