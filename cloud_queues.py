@@ -22,10 +22,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Use:
-python ./cloud-queues.py <queueName> <region>
+python ./cloud-queues.py <queueName>
 
 Eg.
-python ./cloud-queues.py myQueue lon
+python ./cloud-queues.py myQueue
 
 """
 import os
@@ -33,10 +33,10 @@ import argparse
 import pyrax
 from pprint import pprint
 
-def get_queue_stats(queueName, region):
+def get_queue_stats(queueName):
     
     pyrax.settings.set('identity_type', 'rackspace')
-    pyrax.set_credential_file(os.path.expanduser("~/.rackspace_cloud_credentials"), region=region)
+    pyrax.set_credential_file(os.path.expanduser("~/.rackspace_cloud_credentials")
 
     try:
         cq = pyrax.queues
@@ -58,8 +58,7 @@ def get_queue_stats(queueName, region):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("queueName", help="Cloud Queue name")
-    parser.add_argument("region", help="Cloud region, e.g. DFW, ORD or LON")
     args = parser.parse_args()
-    get_queue_stats(args.queueName, args.region.upper())
+    get_queue_stats(args.queueName)
 
     
