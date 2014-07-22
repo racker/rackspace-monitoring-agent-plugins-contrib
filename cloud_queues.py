@@ -52,7 +52,8 @@ def get_queue_stats(queueName):
         return
    
     for key,value in stats.items():
-        print 'metric queue.%s int %s' % (key, value)
+        if key not "oldest" or key not "newest":
+            print 'metric queue.%s int %s' % (key, value)
 
 
 if __name__ == "__main__":
