@@ -1,12 +1,5 @@
 #!/usr/bin/env python2.7
 """
-Rackspace Cloud Monitoring plugin to monitor number of messages in Cloud Queues 
-
-Useful for triggering Autoscale webhooks based on number os messages in a Cloud Queue
-
-Requirement:
-pyrax - https://github.com/rackspace/pyrax
-
 Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,18 +13,45 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+----
 
-Use:
+Rackspace Cloud Monitoring Plugin for Cloud Queues 
+
+Retrieves Stats for number of unclaimed(free), claimed, and total messages in a given queue.
+Useful for triggering Autoscale webhooks based on number os messages in a Cloud Queue.
+
+Requires:
+pyrax - https://github.com/rackspace/pyrax
+
+Usage:
+Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
+
+Setup a CLoud Monitoring Check of type agent.plugin to run
 python ./cloud-queues.py <queueName>
 
 Eg.
 python ./cloud-queues.py myQueue
 
+The following is an example 'criteria' for a Rackspace Monitoring Alarm:
+
+if (metric['queue.free'] >= 100) {
+ return new AlarmStatus(CRITICAL, 'over 100 msgs unclaimed msgs'
+if (metric['queue.free'] >= '50') {
+ return new AlarmStatus(WARNING, 'more than 60 unclaimed msgs');
+}
+return new AlarmStatus(OK, 'Less than 50 unclaimed msgs');
+
+Please note that you will need to adjust the thresholds based on what works for you.
+
+Available metrics are 
+queue.claimed
+queue.total
+queue.free
+
 """
 import os
 import argparse
 import pyrax
-from pprint import pprint
 
 def get_queue_stats(queueName):
     
