@@ -31,6 +31,7 @@
 #  - url: The last URL that was queried (if redirects occurred)
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
+#
 # if (metric['code'] != 200) {
 #  return new AlarmStatus(CRITICAL, '#{code} response received.  Expected 200.');
 # }
