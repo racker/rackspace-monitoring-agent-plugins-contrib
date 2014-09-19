@@ -49,7 +49,7 @@ The available types are:
 
 ## Alarm Criteria
 
-Each script should contain, just below the license header, in a comment, an example alarm criteria that can be used for the plugin. See ithe [Rackspace Cloud Monitoring Documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html#concepts-alarms-alarm-language) for how to write alarm criteria.
+Each script should contain, just below the license header, in a comment, an example alarm criteria that can be used for the plugin. See the [Rackspace Cloud Monitoring Documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html#concepts-alarms-alarm-language) for how to write alarm criteria.
 
 ## License Header
 
