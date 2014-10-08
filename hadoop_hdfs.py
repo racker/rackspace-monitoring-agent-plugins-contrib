@@ -6,7 +6,7 @@
 # Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
 # and run like this:
 #
-# hdfs_check.py [OPTIONS]
+# hadoop_hdfs.py [OPTIONS]
 #
 # OPTIONS
 #   -H PATH   Pass in the hadoop binary path
