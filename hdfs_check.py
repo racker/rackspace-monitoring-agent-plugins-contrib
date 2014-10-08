@@ -2,7 +2,15 @@
 #
 # HDFS metrics
 #
-# Python 2.6+
+# USAGE;
+#
+# hdfs_check.py [OPTIONS]
+#
+# OPTIOSN
+#   -H PATH   Pass in the hadoop binary path
+#   -u user   Set the Hadoop HDFS user name envariable.
+#
+# Requires: Python 2.7+
 #
 
 from __future__ import print_function
@@ -10,23 +18,7 @@ from __future__ import print_function
 import os
 import re
 import sys
-
 import subprocess
-# py2.6 does not have this
-if "check_output" not in dir( subprocess ):
-    def f(*popenargs, **kwargs):
-        process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-        output, unused_err = process.communicate()
-        retcode = process.poll()
-        if retcode:
-            cmd = kwargs.get("args")
-            if cmd is None:
-                cmd = popenargs[0]
-            error = subprocess.CalledProcessError(retcode, cmd)
-            error.output = output
-            raise error
-        return output
-    subprocess.check_output = f
 
 try:
     from subprocess import DEVNULL # py3k
