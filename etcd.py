@@ -3,7 +3,7 @@
 Rackspace Cloud Monitoring plugin for etcd node stats.
 
 Example:
-$ ./etcd.py --host http://localhost:4001
+$ ./etcd.py --url http://localhost:4001
 
 Example alarm criteria:
 
@@ -36,8 +36,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
-
 import urllib2
 import json
 
@@ -45,21 +43,21 @@ from sys import exit
 from optparse import OptionParser, OptionGroup
 
 
-STATUS_OK = "status ok etcd returned a response"
+STATUS_OK = "status etcd returned a response"
 
 
 def bug_out(why):
     '''Something went wrong. Tell the agent what, then die.'''
 
-    print "status critical", why
+    print "status", why
     exit(1)
 
 
-def call_to_server(host, path):
+def call_to_server(url, path):
     '''Call a given path to the server and return JSON.'''
 
     try:
-        r = urllib2.urlopen('{h}{p}'.format(h=host, p=path))
+        r = urllib2.urlopen('{u}{p}'.format(u=url, p=path))
     except (urllib2.URLError, ValueError) as e:
         bug_out(e)
 
@@ -71,10 +69,14 @@ def call_to_server(host, path):
     return response
 
 
-def get_stats(host):
+def get_stats(url):
     '''Return a dict of stats from /v2/stats/self'''
 
-    s = call_to_server(host, '/v2/stats/self')
+    s = call_to_server(url, '/v2/stats/self')
+
+    # i've seen etcd return {"state":""}, so make sure the agent accepts it
+    if not s['state']:
+        s['state'] = "unknown"
 
     print STATUS_OK
     print "metric state string", s['state']
@@ -82,13 +84,15 @@ def get_stats(host):
     print "metric recvAppendRequestCnt uint64", s['recvAppendRequestCnt']
     print "metric sendAppendRequestCnt uint64", s['sendAppendRequestCnt']
 
+    exit(0)
+
 
 if __name__ == "__main__":
     parser = OptionParser()
 
-    parser.add_option("-H", "--host",
-                      action="store", type="string", dest="host",
+    parser.add_option("--url",
+                      action="store", type="string", dest="url",
                       default="http://localhost:4001")
 
     (options, args) = parser.parse_args()
-    get_stats(parser.values.host);
+    get_stats(parser.values.url);
