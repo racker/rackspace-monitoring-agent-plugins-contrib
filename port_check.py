@@ -46,7 +46,7 @@ def main():
         print "status err no connection"
         sys.exit(0)
 
-    print "status ok"
+    print "status OK"
     print "metric port int", port
     print "metric status string", p
 
