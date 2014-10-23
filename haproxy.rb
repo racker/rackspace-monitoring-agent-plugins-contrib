@@ -6,7 +6,7 @@
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <lo@petalphile.com> wrote this file. As long as you retain this notice you
 # can do whatever you want with this stuff. If we meet some day, and you think
-# this stuff is worth it, you can buy me a beer in return 
+# this stuff is worth it, you can buy me a beer in return
 # ----------------------------------------------------------------------------
 #
 # haproxy.rb
@@ -19,10 +19,10 @@
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
-# if (metric['CONNECTIONS'] == 0) {
+# if (metric['connections'] == 0) {
 #   return new AlarmStatus(CRITICAL, 'No connections to your HAProxy!
 #
-# if (metric['CONNECTIONS'] < '10') {
+# if (metric['connections'] < '10') {
 #   return new AlarmStatus(WARNING, 'Less than 10 connections to your HAProxy!');
 # }
 #
@@ -46,7 +46,7 @@ def metric(name,type,value)
 end
 
 def output_success
-  puts "status HAProxy is running and reporting metrics!"
+  puts "status HAProxy is running and reporting metrics"
   @metrics.each do |name,v|
     puts "metric #{name} #{v[:type]} #{v[:value]}"
   end
@@ -56,7 +56,7 @@ begin
   require 'optparse'
   require 'socket'
 rescue
-  fail "Failed to load required ruby gems!"
+  fail "Failed to load required ruby gems"
 end
 
 @metrics = {}
@@ -66,26 +66,41 @@ args = ARGV.dup
 
 OptionParser.new do |o|
   o.banner = "Usage: #{$0} [options]"
-  o.on('-s', '--stats-socket SOCKET', 'Specify the HAProxy stats socket') do |s| 
-    options[:sock] = s 
+  o.on('-s', '--stats-socket SOCKET', 'Specify the HAProxy stats socket') do |s|
+    options[:sock] = s
   end
   o.on_tail('-h', '--help', 'Show this message') { puts o; exit }
   o.parse!(args)
 end
 
-fail "You must specify the haproxy stats socket!" if options[:sock].nil?
+fail "You must specify the haproxy stats socket" if options[:sock].nil?
 
-pid = `pidof haproxy`.chomp.to_i || fail("HAProxy is not running!")
+pid = `pidof haproxy`.chomp.to_i || fail("HAProxy is not running")
 
+# get global frontend stats
 begin
-  conn = `lsof -ln -i |grep -c #{pid}`.chomp.to_i
-  # removes the listener and stats socket
-  conn = conn - 2
-  metric("connections","int",conn.to_i)
+  ctl=UNIXSocket.new(options[:sock])
+  ctl.puts "show info"
+
+  while (line = ctl.gets) do
+    if (line =~ /^CurrConns:/)
+      line = line.split(":")
+      metric("connections","int", line[1].to_i)
+    end
+    if (line =~ /^ConnRate:/)
+      line = line.split(":")
+      metric("connection_rate","int", line[1].to_i)
+    end
+  end
+  ctl.close
 rescue
-  fail "Unable to get getting connection counts!"
+  fail "Problem reading global stats from #{options[:sock]}"
 end
 
+# get per-backend stats
+# note that the current maximum number of metrics a plugin can submit is 30.
+# if you have a lot of backends, you'll need to remove a metric or two in
+# the list below.
 begin
   ctl=UNIXSocket.new(options[:sock])
   ctl.puts "show stat"
@@ -93,7 +108,7 @@ begin
   while (line = ctl.gets) do
     if (line =~ /^[^#]\w+/)
       line = line.split(",")
-      host = "#{line[0]}_#{line[1]}"
+      host = "#{line[0]}_#{line[1]}".gsub('-', '_').gsub('.', '_')
       metric("#{host}_request_rate","int",line[47].to_i)
       metric("#{host}_total_requests","gauge",line[49].to_i)
       metric("#{host}_health_check_duration","int",line[35].to_i)
@@ -102,7 +117,7 @@ begin
   end
   ctl.close
 rescue
-  fail "Problem reading from #{options[:sock]}!"
+  fail "Problem reading backend stats from #{options[:sock]}"
 end
 
 output_success
