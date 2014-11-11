@@ -33,6 +33,9 @@
 
 # check if service is running
 SERVICE=varnish
+VARNISHSTAT=/usr/bin/varnishstat
+VARNISHADM=/usr/bin/varnishadm
+
 if P=$(pgrep $SERVICE | wc -l)
 then
     echo "status $SERVICE is running ($P instances)"
@@ -41,13 +44,13 @@ else
 fi
 
 # calculate hit percent
-hits=$(/usr/bin/varnishstat -1 -f cache_hit | awk '$2>0 {print $2}')
-misses=$(/usr/bin/varnishstat -1 -f cache_miss | awk '$2>0 {print $2}')
-hit_percent=$(echo "scale=8;($misses/$hits)" | bc | awk '{printf "%f", 100-($1*100)}')
+hits=$($VARNISHSTAT -1 -f cache_hit | awk '{print $2}')
+connections=$($VARNISHSTAT -1 -f client_req| awk '{print $2}')
+hit_percent=$(echo "scale=8;($hits/$connections)" | bc | awk '{printf "%f", $1*100}')
 echo "metric hit_percent double "$hit_percent
 
 # calculate # of healthy backends
-healthy=$(varnishadm debug.health | grep -c "Healthy")
+healthy=$($VARNISHADM backend.list | grep -c "Healthy")
 echo "metric healthy_backends int32" $healthy
 
-/usr/bin/varnishstat -1 -f $1 | awk ' { print "metric " $1 " gauge " $2 } '
+[ ! -z $1 ] && $VARNISHSTAT -1 -f $1 | awk ' { print "metric " $1 " gauge " $2 } '
