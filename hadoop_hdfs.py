@@ -12,7 +12,7 @@
 #   -H PATH   Pass in the hadoop binary path
 #   -u user   Set the Hadoop HDFS user name envariable.
 #
-# Requires: Python 2.7+
+# Requires: Python 2.7+ and should work with Python 3
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
