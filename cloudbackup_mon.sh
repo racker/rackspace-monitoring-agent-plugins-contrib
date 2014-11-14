@@ -61,7 +61,7 @@ function help {
 
 cat <<HELP
 
-SYNOPSIS:  ./cloudbackup_mon.sh [apikey]... 
+SYNOPSIS:  ./cloudbackup_mon.sh apikey [backup-configuration-id]
 USAGE EXAMPLE: ./cloudbackup_mon.sh 4fdd665dfddwgfdvfnotreal
 
 HELP
@@ -71,36 +71,62 @@ HELP
 if [ -z "$1" ]; then
         help
 fi
+api_key=$1
+
+if [ -z "$2" ]; then
+	this_backup_conf_id=
+else
+	this_backup_conf_id=$2
+fi
 
 
 # Get username and agentid
-username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' | sed -e 's/,//g'`
+username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' -e 's/,//g'`
 agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId | awk '{print $3}' | sed -e 's/,//g'`
 
 # Get token
-token=`curl -s -I -H "X-Auth-Key: $1" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep -vi 'vary:' | grep -i X-Auth-Token |awk {'print $2'}`
+token=`curl -s -I -H "X-Auth-Key: $api_key" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep -vi 'vary:' | grep -i X-Auth-Token |awk {'print $2'}`
 
-# Get report ID:
-last_report=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud.com/v1.0/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
+# Get latest backup IDs
+backup_ids=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud.com/v1.0/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
 
-# Run report to see if backup successful:
-curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report | python -m json.tool > report.tmp
+tmpfile=`mktemp`
+for backup_id in $backup_ids; do
 
-# Parse report
-diagnostics=`cat report.tmp | grep Diagnostics | sed -e 's/"Diagnostics": "//g' | sed -e 's/",//g' | sed -e 's/^[ \t]*//'`
-numerrors=`cat report.tmp | grep NumErrors | awk '{print $2}' | sed -e 's/,//g'`
-reason=`cat report.tmp | grep Reason | awk '{print $2}' | sed -e 's/,//g' | sed -e 's/"//g'`
-state=`cat report.tmp | grep State | awk '{print $2}' | sed -e 's/,//g' | sed -e 's/"//g'`
+  # Run report to see if backup was successful:
+  curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$backup_id | python -m json.tool > $tmpfile
+
+  conf_id=`grep BackupConfigurationId < $tmpfile | sed -e 's/"BackupConfigurationId": //g' -e 's/,//g' -e 's/[ \t]*//g'`
+  if [ "X$this_backup_conf_id" != "X" -a "X$conf_id" != "X$this_backup_conf_id" ]; then
+    continue
+  fi
+
+  # Parse report
+  name=`grep BackupConfigurationName < $tmpfile | sed -e 's/"BackupConfigurationName": "//g' | sed -e 's/",//g' -e 's/^[ \t]*//'`
+  diagnostics=`grep Diagnostics < $tmpfile | sed -e 's/"Diagnostics": "//g' -e 's/",//g' -e 's/^[ \t]*//'`
+  numerrors=`grep NumErrors < $tmpfile | awk '{print $2}' | sed -e 's/,//g'`
+  reason=`grep Reason < $tmpfile | awk '{print $2}' | sed -e 's/,//g' -e 's/"//g'`
+  state=`grep State < $tmpfile | awk '{print $2}' | sed -e 's/,//g' -e 's/"//g'`
+
+  # Return numeric value that can be checked when report is missing fields
+  if [ "X$numerrors" = "X" ]; then
+    numerrors=0
+  fi
+
+  echo "metric diagnostics string $diagnostics"
+  echo "metric numerrors int $numerrors"
+  echo "metric reason string $reason"
+  echo "metric state string $state"
+  echo "metric backup_id int $backup_id"
+  echo "metric backup_configuration_id int $conf_id"
+  echo "metric backup_configuration_name string $name"
+done
 
 # Confirm agent is running on server
 agent_check=`ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient"`
 
 # Generate metrics
-echo "metric diagnostics string $diagnostics"
-echo "metric numerrors int $numerrors"
-echo "metric reason string $reason"
-echo "metric state string $state"
 echo "metric agent_running int $agent_check"
 
 # Clean up
-rm report.tmp
+rm $tmpfile
