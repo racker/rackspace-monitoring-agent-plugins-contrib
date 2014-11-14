@@ -64,7 +64,7 @@ from optparse import OptionParser
 
 
 class DockerService(object):
-    """Create on object for a Docker service. Assume it is stopped."""
+    """Create an object for a Docker service. Assume it is stopped."""
 
     def __init__(self, url):
 
