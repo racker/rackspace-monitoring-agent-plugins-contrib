@@ -32,20 +32,25 @@
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
-# if (metric['code'] != 200) {
+# if (metric['code'] != '200') {
 #  return new AlarmStatus(CRITICAL, '#{code} response received.  Expected 200.');
 # }
 # return new AlarmStatus(OK, '200 response received');
 #
 
-response=`curl -s -o /dev/null -ILk -w "%{http_code} %{time_connect} %{time_total} %{url_effective}" $1`
-code=`echo $response | awk {'print $1'}`
-time_connect=`echo $response | awk {'print $2'}`
-time_total=`echo $response | awk {'print $3'}`
-url=`echo $response | awk {'print $4'}`
+response=$(curl -sS -L -f -o /dev/null -I -w "%{response_code} %{time_connect} %{time_total} %{url_effective}" $1 2>&1)
 
-echo "status ok connection made"
-echo "metric code uint32 $code"
-echo "metric time_connect double $time_connect"
-echo "metric time_total double $time_total"
-echo "metric url string $url"
+if [ $? -eq 0 ]
+then
+  echo "status ok connection made"
+  echo "metric code string $(echo $response | awk {'print $1'})"
+  echo "metric time_connect double $(echo $response | awk {'print $2'})"
+  echo "metric time_total double $(echo $response | awk {'print $3'})"
+  echo "metric url string $(echo $response | awk {'print $4'})"
+  exit 0
+else
+  #remove statistics from our status line, only keep the error
+  echo "status $(echo $response | awk -F'000 ' '{$0=$1}1' )"
+fi
+
+exit 1
