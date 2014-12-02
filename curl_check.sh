@@ -38,15 +38,36 @@
 # return new AlarmStatus(OK, '200 response received');
 #
 
-response=$(curl -sS -L -f -o /dev/null -I -w "%{response_code} %{time_connect} %{time_total} %{url_effective}" $1 2>&1)
+function extract_header()
+{
+    ret=$(echo "$1" | grep "$2:" | tail -1 | cut -d' ' -f 2- | tr -d '\n\r' )
+    [ -n "$ret" ] && echo -n $ret
+}
+
+response=$(curl -sS -L -f -I -w "Response-Code: %{response_code}\nTime-Connect: %{time_connect}\nTime-Total: %{time_total}\nURL-Effective: %{url_effective}\n" $1 2>&1)
 
 if [ $? -eq 0 ]
 then
   echo "status ok connection made"
-  echo "metric code string $(echo $response | awk {'print $1'})"
-  echo "metric time_connect double $(echo $response | awk {'print $2'})"
-  echo "metric time_total double $(echo $response | awk {'print $3'})"
-  echo "metric url string $(echo $response | awk {'print $4'})"
+  echo "metric code string $(extract_header "$response" Response-Code)"
+  echo "metric time_connect double $(extract_header "$response" Time-Connect) seconds"
+  echo "metric time_total double $(extract_header "$response" Time-Total) seconds"
+  echo "metric url string $(extract_header "$response" URL-Effective)"
+
+  etag=$(extract_header "$response" ETag)
+  [ -n "$etag" ] && echo "metric etag string $etag"
+
+  length=$(extract_header "$response" Content-Length)
+  [ -n "$length" ] && echo "metric content_length uint32 $length bytes"
+
+  modified=$(extract_header "$response" Last-Modified)
+  if [ -n "$modified" ]
+  then
+      modified_seconds=$(date --date="$modified" +"%s")
+      age=$(($(date +"%s") - $modified_seconds))
+      echo "metric page_age uint64 $age seconds"
+  fi
+
   exit 0
 else
   #remove statistics from our status line, only keep the error
