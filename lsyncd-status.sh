@@ -50,7 +50,7 @@
 #
 # return new AlarmStatus(OK, 'Lsyncd Service is running.');
 #
-
+# REQUIRES 'bc' to be installed
 
 SERVICE="lsyncd"
 RESULT=$(pgrep -x ${SERVICE})
@@ -70,6 +70,8 @@ if [ -e /etc/lsyncd.lua ]; then
 	lsyncd_conf_file="/etc/lsyncd.lua"
 elif [ -e /etc/lsyncd.conf ]; then
 	lsyncd_conf_file="/etc/lsyncd.conf"
+elif [ -e /etc/lsyncd/lsyncd.conf.lua ]; then
+        lsyncd_conf_file="/etc/lsyncd/lsyncd.conf.lua"
 elif [ -e /etc/lsyncd/lsyncd.conf ]; then
         lsyncd_conf_file="/etc/lsyncd/lsyncd.conf"
 else
