@@ -53,19 +53,8 @@
 # REQUIRES 'bc' to be installed
 
 SERVICE="lsyncd"
-RESULT=$(pgrep -x ${SERVICE})
-if [[ "${RESULT:-null}" = null ]]; then
-	echo "metric ${SERVICE}_status string notrunning"
-else
-	echo "metric ${SERVICE}_status string running"
-fi
 
-# Calculate current inotify watches
-current_inotify_watches=$(awk '{print $3}' <(sysctl fs.inotify.max_user_watches))
-# Update this value based on the current lsyncd version, the standard will use 2.1.x
-# Currently only taking first value, assuming replicated for multiple nodes
-# This value may need to be modified based on the amount of different directories being
-# watched
+# Attempt to locate lsyncd configuration file
 if [ -e /etc/lsyncd.lua ]; then
 	lsyncd_conf_file="/etc/lsyncd.lua"
 elif [ -e /etc/lsyncd.conf ]; then
@@ -76,21 +65,44 @@ elif [ -e /etc/lsyncd/lsyncd.conf ]; then
         lsyncd_conf_file="/etc/lsyncd/lsyncd.conf"
 else
 	echo "status ${SERVICE} not installed"
+	exit 1
 fi
-# Store the values we pull from the configuration file to an array
-watch_list=()
-for dir_watch in $(grep "source=\"/" ${lsyncd_conf_file} | grep -ve '^[ ]*--' ); do
-	current_dir=$(echo $dir_watch | cut -d'=' -f2| sed -e "s/\"//g" -e "s/,//g")
-	watch_list=("${watch_list[@]}" "${current_dir}")
-done
-# Force unique values in this array - not calculating for multiple directories
-sorted_unique_dirs=$(echo "${watch_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
-# calculate current directories to watch
-current_directories_to_watch=0
-for SOURCE in ${sorted_unique_dirs[@]}; do
-	current_directories_to_watch=$(echo ${current_directories_to_watch}+$(find ${SOURCE} -type d | wc -l | awk '{print $1}') | bc -l)
-done 
-#current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1}')
+
+# Test if the service is running
+RESULT=$(pgrep -x ${SERVICE})
+if [[ "${RESULT:-null}" = null ]]; then
+	echo "metric ${SERVICE}_status string notrunning"
+else
+	echo "metric ${SERVICE}_status string running"
+fi
+
+# Calculate current inotify watches
+current_inotify_watches=$(awk '{print $3}' <(sysctl fs.inotify.max_user_watches))
+
+# 2.1.x status file contains number of directories watched.  Avoids I/O overhead of find command.
+lsyncd_status_file=$(sed -n 's/.*statusFile\s*=\s*"\(.*\)",.*/\1/p' $lsyncd_conf_file)
+if [ -e "$lsyncd_status_file" ]; then
+	current_directories_to_watch=$(sed -n "s/Inotify watching \([0-9][0-9]*\) directories/\1/p" "$lsyncd_status_file")
+fi
+
+# Fall back to old method if current_directories_to_watch is not a number
+if ! [[ "$current_directories_to_watch" =~ ^[0-9]+$ ]] ; then
+	# Store the values we pull from the configuration file to an array
+	watch_list=()
+	for dir_watch in $(grep "source=\"/" ${lsyncd_conf_file} | grep -ve '^[ ]*--' ); do
+		current_dir=$(echo $dir_watch | cut -d'=' -f2| sed -e "s/\"//g" -e "s/,//g")
+		watch_list=("${watch_list[@]}" "${current_dir}")
+	done
+	# Force unique values in this array - not calculating for multiple directories
+	sorted_unique_dirs=$(echo "${watch_list[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+	# calculate current directories to watch
+	current_directories_to_watch=0
+	for SOURCE in ${sorted_unique_dirs[@]}; do
+		current_directories_to_watch=$(echo ${current_directories_to_watch}+$(find ${SOURCE} -type d | wc -l | awk '{print $1}') | bc -l)
+	done
+	#current_directories_to_watch=$(find ${SOURCE} -type d | wc -l | awk '{print $1}')
+fi
+
 # calculate percenentage of total
 current_percentage=$(echo "${current_directories_to_watch}/${current_inotify_watches}" | bc -l | awk '{printf "%f", $1*100}')
 
