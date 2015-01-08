@@ -26,7 +26,7 @@ if [ ! -d $DIR ]; then
 else
     status="ok directory $DIR found"
     size=`du -sm $DIR 2>/dev/null | awk '{print $1}'`
-    if [ "X$size" = "X" ]; then
+    if [ -z "$size" ]; then
 	size=-1
     fi
 fi    
