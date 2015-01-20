@@ -119,15 +119,15 @@ class MySQL:
         self.config_file = "/etc/holland/providers/mysqldump.conf"
         self.user = get_conf_value(self.config_file, 'user')
         self.password = get_conf_value(self.config_file, 'password')
-        self.creds_file = get_conf_value(self.config_file, 
-            'defaults-extra-file').split(',')
+        self.creds_file = get_conf_value(self.config_file,
+                                         'defaults-extra-file')
 
     # return true if credentials set
     def check_creds(self):
         if (self.user and self.password):
             return 'true'
         elif self.creds_file:
-            for f in self.creds_file:
+            for f in self.creds_file.split(','):
                 if os.access(f, os.F_OK):
                     return 'true'
             return 'false'
@@ -155,7 +155,7 @@ class MySQL:
         try:
             DEVNULL = open(os.devnull, 'wb')
             if self.creds_file:
-                for f in self.creds_file:
+                for f in self.creds_file.split(','):
                     try:
                         status = subprocess.call([
                             "/usr/bin/mysqladmin",
