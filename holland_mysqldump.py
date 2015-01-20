@@ -115,19 +115,28 @@ class Holland:
 
 
 class MySQL:
-    def __init__(self):
+    def __init__(self, backupset):
         self.config_file = "/etc/holland/providers/mysqldump.conf"
-        self.user = get_conf_value(self.config_file, 'user')
-        self.password = get_conf_value(self.config_file, 'password')
-        self.creds_file = get_conf_value(self.config_file, 
-            'defaults-extra-file').split(',')
+        self.backupset_config = "/etc/holland/backupsets/%s.conf" % backupset
+        if get_conf_value(self.backupset_config, 'user'):
+            self.user = get_conf_value(self.backupset_config, 'user')
+            self.password = get_conf_value(self.backupset_config, 'password')
+        else:
+            self.user = get_conf_value(self.config_file, 'user')
+            self.password = get_conf_value(self.config_file, 'password')
+
+        self.creds_files = get_conf_value(self.backupset_config,
+                                          'defaults-extra-file')
+        if not self.creds_files:
+            self.creds_files =  get_conf_value(self.config_file,
+                                               'defaults-extra-file')
 
     # return true if credentials set
     def check_creds(self):
         if (self.user and self.password):
             return 'true'
-        elif self.creds_file:
-            for f in self.creds_file:
+        elif self.creds_files:
+            for f in self.creds_files.split(','):
                 if os.access(f, os.F_OK):
                     return 'true'
             return 'false'
@@ -154,8 +163,8 @@ class MySQL:
     def check_status(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
-            if self.creds_file:
-                for f in self.creds_file:
+            if self.creds_files:
+                for f in self.creds_files.split(','):
                     try:
                         status = subprocess.call([
                             "/usr/bin/mysqladmin",
@@ -171,9 +180,15 @@ class MySQL:
                     "/usr/bin/mysqladmin",
                     "-u",self.user,
                     "-p"+self.password,
-                    "status"])
+                    "status"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
             else:
-                status = subprocess.call(["/usr/bin/mysqladmin","status"])
+                status = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "status"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
         except:
             return 'false'
         else:
@@ -289,7 +304,7 @@ if __name__ == '__main__':
 
 
     # Finally check SQL
-    sql = MySQL()
+    sql = MySQL(backupset)
 
     print "status success holland checked"
     print "metric log_age int64",log_age
