@@ -171,9 +171,15 @@ class MySQL:
                     "/usr/bin/mysqladmin",
                     "-u",self.user,
                     "-p"+self.password,
-                    "status"])
+                    "status"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
             else:
-                status = subprocess.call(["/usr/bin/mysqladmin","status"])
+                status = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "status"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
         except:
             return 'false'
         else:
