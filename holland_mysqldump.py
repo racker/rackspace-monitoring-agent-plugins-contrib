@@ -134,12 +134,36 @@ class MySQL:
         else:
             return 'false'
 
-    # return true if ping succeeds
+        # return true if ping succeeds
     def check_ping(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
-            ping = subprocess.call(["/usr/bin/mysqladmin","ping"], 
-                stdout=DEVNULL, stderr=DEVNULL)
+            if self.creds_files:
+                for f in self.creds_files.split(','):
+                    try:
+                        ping = subprocess.call([
+                            "/usr/bin/mysqladmin",
+                            "--defaults-file="+f,"ping"],
+                            stdout=DEVNULL,
+                            stderr=DEVNULL)
+                        if ping == 0:
+                            break
+                    except:
+                        ping = 0
+            elif self.user and self.password:
+                ping = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "-u",self.user,
+                    "-p"+self.password,
+                    "ping"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
+            else:
+                ping = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "ping"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
         except:
             return 'false'
         else:
