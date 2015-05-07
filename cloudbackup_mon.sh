@@ -54,14 +54,14 @@
 # if (metric['agent_running'] == 0) {
 # return new AlarmStatus(CRITICAL, 'Agent is not running.');
 # }
-# 
+#
 # return new AlarmStatus(OK, 'Cloud Backups Successful.');
 
 function help {
 
 cat <<HELP
 
-SYNOPSIS:  ./cloudbackup_mon.sh [apikey]... 
+SYNOPSIS:  ./cloudbackup_mon.sh [apikey]...
 USAGE EXAMPLE: ./cloudbackup_mon.sh 4fdd665dfddwgfdvfnotreal
 
 HELP
@@ -70,14 +70,14 @@ HELP
 
 
 function error_exit {
-    #	----------------------------------------------------------------
-    #	Function for exit due to fatal program error
-    #		Accepts 1 argument:
-    #			string containing descriptive error message
-    #	----------------------------------------------------------------
+    #   ----------------------------------------------------------------
+    #   Function for exit due to fatal program error
+    #       Accepts 1 argument:
+    #           string containing descriptive error message
+    #   ----------------------------------------------------------------
 
-	echo "status ${1:-"Unknown Error"}" 1>&2
-	exit 1
+    echo "status ${1:-"Unknown Error"}" 1>&2
+    exit 1
 }
 
 if [ -z "$1" ]; then
@@ -98,8 +98,8 @@ last_report=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud
 
 # Run report to see if backup successful:
 curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report \
-    |python -m json.tool > report.tmp \
-    || error_exit "failed to set token"
+    | python -m json.tool 2>/dev/null > report.tmp \
+    || error_exit "failed to get last_report"
 
 # Parse report
 diagnostics=`cat report.tmp | grep Diagnostics | sed -e 's/"Diagnostics": "//g' | sed -e 's/",//g' | sed -e 's/^[ \t]*//'`
