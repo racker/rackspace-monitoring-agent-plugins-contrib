@@ -68,10 +68,21 @@ HELP
         exit 0
 }
 
+
+function error_exit {
+    #	----------------------------------------------------------------
+    #	Function for exit due to fatal program error
+    #		Accepts 1 argument:
+    #			string containing descriptive error message
+    #	----------------------------------------------------------------
+
+	echo "status ${1:-"Unknown Error"}" 1>&2
+	exit 1
+}
+
 if [ -z "$1" ]; then
         help
 fi
-
 
 # Get username and agentid
 username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' | sed -e 's/,//g'`
@@ -79,12 +90,16 @@ agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId | awk '{print $3}' |
 
 # Get token
 token=`curl -s -I -H "X-Auth-Key: $1" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep X-Auth-Token |awk {'print $2'}`
+    [[ -z "$token" ]] && error_exit "failed to set token"
 
 # Get report ID:
 last_report=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud.com/v1.0/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
+    [[ -z "$token" ]] && error_exit "failed to set last_report"
 
 # Run report to see if backup successful:
-curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report | python -m json.tool > report.tmp
+curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report \
+    |python -m json.tool > report.tmp \
+    || error_exit "failed to set token"
 
 # Parse report
 diagnostics=`cat report.tmp | grep Diagnostics | sed -e 's/"Diagnostics": "//g' | sed -e 's/",//g' | sed -e 's/^[ \t]*//'`
@@ -94,6 +109,7 @@ state=`cat report.tmp | grep State | awk '{print $2}' | sed -e 's/,//g' | sed -e
 
 # Confirm agent is running on server
 agent_check=`ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient"`
+    [[ -z "$agent_check" ]] && error_exit "failed to check agent status"
 
 # Generate metrics
 echo "metric diagnostics string $diagnostics"
@@ -103,4 +119,8 @@ echo "metric state string $state"
 echo "metric agent_running int $agent_check"
 
 # Clean up
-rm report.tmp
+rm report.tmp || error_exit "failed to cleanup report.tmp"
+
+echo "status success"
+
+exit 0
