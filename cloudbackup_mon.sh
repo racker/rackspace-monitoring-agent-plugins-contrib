@@ -118,7 +118,8 @@ echo "metric state string $state"
 echo "metric agent_running int $agent_check"
 
 # Clean up
-rm report.tmp || error_exit "failed to cleanup report.tmp"
+rm report.tmp \
+    || error_exit "failed to cleanup report.tmp"
 
 echo "status success"
 
