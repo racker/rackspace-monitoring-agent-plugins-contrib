@@ -97,8 +97,7 @@ last_report=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud
     [[ -z "$token" ]] && error_exit "failed to set last_report"
 
 # Run report to see if backup successful:
-curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report \
-    | python -m json.tool 2>/dev/null > report.tmp \
+curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$last_report | python -m json.tool 2>/dev/null > report.tmp \
     || error_exit "failed to get last_report"
 
 # Parse report
