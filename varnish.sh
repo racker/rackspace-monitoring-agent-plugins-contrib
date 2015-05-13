@@ -43,6 +43,9 @@ else
     echo "status $SERVICE is not running"
 fi
 
+# output number of processes
+echo "metric processes int32 $P"
+
 # calculate hit percent
 hits=$($VARNISHSTAT -1 -f cache_hit | awk '{print $2}')
 connections=$($VARNISHSTAT -1 -f client_req| awk '{print $2}')
