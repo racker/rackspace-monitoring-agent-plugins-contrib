@@ -58,7 +58,7 @@ if [ -x $NTPQ_BIN ] && [ -x $AWK_BIN ]
     OUTPUT=$($NTPQ_BIN -pn | $AWK_BIN '{ if ($9 ~ /[0-9]/) print $9};' | cut -f 1 -d '.')
     OUTPUT=${OUTPUT/-/}
     AVG=$(average $OUTPUT)
-    echo "metric ntp_offset int $AVG"
+    echo "metric ntp_offset int32 $AVG"
     echo "status ok ntp_offset calculated and reported."
   else
     echo "status err ntpq or awk is not executable"
