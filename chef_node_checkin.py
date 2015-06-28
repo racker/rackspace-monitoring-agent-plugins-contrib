@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 import time
 import os
 
+if os.stat('/var/log/chef/client.log').st_size == 0:
+    print "status Warning node has not generated a client log"
+    print "metric timeSinceCheckIn int32", 0
+    os._exit(0)
+
 logFile = open('/var/log/chef/client.log', 'r')
 
 clientRuns = []
