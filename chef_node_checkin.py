@@ -6,7 +6,7 @@ import os
 import sys
 
 if os.stat('/var/log/chef/client.log').st_size == 0:
-    print "status Warning node has not generated a client log"
+    print "status OK node has not generated a client log"
     print "metric timeSinceCheckIn int32 0"
     print "metric checkInDuration int32 0"
     print "metric numberOfClients int32 0"
