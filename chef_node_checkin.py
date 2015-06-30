@@ -54,15 +54,15 @@ try:
     metrics = PopulateMetrics(logfile)
 
 # Anything OS related with file handling should warn and exit
-except IOError:
+except IOError as err:
     print "status Warning there was an error handling {0}".format(err)
 
 # Handle the log regex not returning a poplated array
 except IndexError:
     print "status OK node has not generated a parsable log"
 
-except as err:
-    print "status Warning {0}".format(err)
+except:
+    print "status Warning unhandled error executing script"
 
 # Always print out metrics to allow REACH to report metrics
 finally:
