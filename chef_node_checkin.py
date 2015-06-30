@@ -55,7 +55,7 @@ try:
 
 # Anything OS related with file handling should warn and exit
 except IOError as err:
-    print "status Warning there was an error handling {0}".format(err)
+    print "status Warning {0}".format(err)
 
 # Handle the log regex not returning a poplated array
 except IndexError:
