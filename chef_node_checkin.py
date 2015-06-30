@@ -15,49 +15,57 @@ def PopulateMetrics(log):
             date = re.split('-|T|\+|\:', (line.split()[0])[1:][:-1])
             clientRuns.append(datetime(int(date[0]), int(date[1]), int(
                 date[2]), int(date[3]), int(date[4]), int(date[5]), 0))
-            checkInDuration = int(float(line.split()[6]))
+            metrics['checkInDuration'] = int(float(line.split()[6]))
 
-    timeSinceCheckIn = int(
-        datetime.now().strftime('%s')) - int(sorted(clientRuns)[-1].strftime('%s'))
+    metrics['timeSinceCheckIn'] = int(
+        datetime.now().strftime('%s')) - int(
+        sorted(clientRuns)[-1].strftime('%s')
+    )
 
-    processesAmount = 0
+    metrics['processesAmount'] = 0
     pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
     for pid in pids:
         match = re.search(
-            'chef-client', open(os.path.join('/proc', pid, 'cmdline'), 'rb').read())
+            'chef-client',
+            open(os.path.join('/proc', pid, 'cmdline'), 'rb').read()
+        )
         if match:
-            processesAmount += 1
+            metrics['processesAmount'] += 1
 
-    if timeSinceCheckIn > 86400:
-        print "status Critcal node has not checked in for {0} seconds".format(timeSinceCheckIn)
-    elif timeSinceCheckIn > 3600:
-        print "status Warning node has not checked in for {0} seconds".format(timeSinceCheckIn)
+    if metrics['timeSinceCheckIn'] > 86400:
+        print "status Critcal node has not checked in for {0} seconds".format(
+            metrics['timeSinceCheckIn']
+        )
+    elif metrics['timeSinceCheckIn'] > 3600:
+        print "status Warning node has not checked in for {0} seconds".format(
+            metrics['timeSinceCheckIn']
+        )
     else:
-        print "status OK node checked in {0} seconds ago".format(timeSinceCheckIn)
+        print "status OK node checked in {0} seconds ago".format(
+            metrics['timeSinceCheckIn']
+        )
+    return metrics
 
 
 logfile = '/var/log/chef/client.log'
-
-checkInDuration = 0
-processesAmount = 0
-timeSinceCheckIn = 0
+metrics = {'timeSinceCheckIn': 0, 'checkInDuration': 0, 'processesAmount': 0}
 
 try:
-    PopulateMetrics(logfile)
+    metrics = PopulateMetrics(logfile)
 
 # Anything OS related with file handling should warn and exit
-except IOError as err:
-    print "status Warning there was an error handling {0}".format(logfile)
+except IOError:
+    print "status Warning there was an error handling {0}".format(err)
 
-# Handle the log regex not returning a poplated array meaning an
+# Handle the log regex not returning a poplated array
 except IndexError:
     print "status OK node has not generated a parsable log"
 
-except:
-    print "status Warning unhandled error executing script"
+except as err:
+    print "status Warning {0}".format(err)
 
-# Print out even zero values to allow for REACH to show exported metrics
+# Always print out metrics to allow REACH to report metrics
 finally:
-    print "metric timeSinceCheckIn int32", timeSinceCheckIn
-    print "metric checkInDuration int32", checkInDuration
-    print "metric numberOfClients int32", processesAmount
+    print "metric timeSinceCheckIn int32", metrics['timeSinceCheckIn']
+    print "metric checkInDuration int32",  metrics['checkInDuration']
+    print "metric numberOfClients int32",  metrics['processesAmount']
