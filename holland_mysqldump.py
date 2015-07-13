@@ -28,26 +28,26 @@
 # Ensure file is executable (755)
 #
 # Example Criteria
-# if (metric['sql_ping_succeeds'] == 'false') { 
-#  return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL is not running.'); 
-# } 
-# if (metric['sql_creds_exist'] == 'false') { 
+# if (metric['sql_ping_succeeds'] == 'false') {
+#  return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL is not running.');
+# }
+# if (metric['sql_creds_exist'] == 'false') {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials file \
-#            does not exist.'); 
-# } 
-# if (metric['sql_status_succeeds'] == 'false') { 
+#            does not exist.');
+# }
+# if (metric['sql_status_succeeds'] == 'false') {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials do \
-#            not authenticate.'); 
-# } 
-# if (metric['dump_age'] > 172800) { 
+#            not authenticate.');
+# }
+# if (metric['dump_age'] > 172800) {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: mysqldump file is older \
-#            than 2d.'); 
-# } 
-# if (metric['error_count'] > 0) { 
-#   return new AlarmStatus(CRITICAL, 'holland-plugin: #{last_error}.'); 
-# } 
+#            than 2d.');
+# }
+# if (metric['error_count'] > 0) {
+#   return new AlarmStatus(CRITICAL, 'holland-plugin: #{last_error}.');
+# }
 #
-# return new AlarmStatus(OK, 'holland-plugin: MySQL and Holland OK'); 
+# return new AlarmStatus(OK, 'holland-plugin: MySQL and Holland OK');
 
 import os
 import sys
@@ -55,8 +55,8 @@ import re
 import time
 import subprocess
 
+
 def get_conf_value(config_file, key):
-    value = None
     try:
         config = open(config_file, 'r')
         for line in config.readlines():
@@ -99,8 +99,6 @@ class Holland:
             print "status error unable to retrieve log file modified time"
             sys.exit(1)
 
-
-
     def get_time_since_dump(self):
         dump = os.path.join(self.directory, self.backupset, 'newest')
         try:
@@ -121,15 +119,17 @@ class MySQL:
         if get_conf_value(self.backupset_config, 'user'):
             self.user = get_conf_value(self.backupset_config, 'user')
             self.password = get_conf_value(self.backupset_config, 'password')
+            self.host = get_conf_value(self.backupset_config, 'host')
         else:
             self.user = get_conf_value(self.config_file, 'user')
             self.password = get_conf_value(self.config_file, 'password')
+            self.host = get_conf_value(self.config_file, 'host')
 
         self.creds_files = get_conf_value(self.backupset_config,
                                           'defaults-extra-file')
         if not self.creds_files:
-            self.creds_files =  get_conf_value(self.config_file,
-                                               'defaults-extra-file')
+            self.creds_files = get_conf_value(self.config_file,
+                                              'defaults-extra-file')
 
     # return true if credentials set
     def check_creds(self):
@@ -147,8 +147,32 @@ class MySQL:
     def check_ping(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
-            ping = subprocess.call(["/usr/bin/mysqladmin","ping"], 
-                stdout=DEVNULL, stderr=DEVNULL)
+            if self.creds_files:
+                for f in self.creds_files.split(','):
+                    try:
+                        ping = subprocess.call([
+                            "/usr/bin/mysqladmin",
+                            "--defaults-file="+f,
+                            "ping"],
+                            stdout=DEVNULL,
+                            stderr=DEVNULL)
+                        if ping == 0:
+                            break
+                    except:
+                        ping = 0
+            elif self.host:
+                ping = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "-h", self.host,
+                    "ping"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
+            else:
+                ping = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "ping"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
         except:
             return 'false'
         else:
@@ -168,18 +192,28 @@ class MySQL:
                     try:
                         status = subprocess.call([
                             "/usr/bin/mysqladmin",
-                            "--defaults-file="+f,"status"], 
-                            stdout=DEVNULL, 
+                            "--defaults-file="+f,
+                            "status"],
+                            stdout=DEVNULL,
                             stderr=DEVNULL)
                         if status == 0:
                             break
                     except:
                         status = 0
+            elif self.user and self.password and self.host:
+                status = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "-h", self.host,
+                    "-u", self.user,
+                    "-p" + self.password,
+                    "status"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
             elif self.user and self.password:
                 status = subprocess.call([
                     "/usr/bin/mysqladmin",
-                    "-u",self.user,
-                    "-p"+self.password,
+                    "-u", self.user,
+                    "-p" + self.password,
                     "status"],
                     stdout=DEVNULL,
                     stderr=DEVNULL)
@@ -198,7 +232,8 @@ class MySQL:
             return 'true'
         else:
             return 'false'
-        
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         backupset = sys.argv[1]
@@ -208,13 +243,12 @@ if __name__ == '__main__':
     name = 'zzz_holland_backup_'+backupset
 
     holland = Holland(backupset)
-    
+
     log_file = holland.get_log_file()
     log_modified = holland.get_log_mod_time()
     log_age = int(time.time() - log_modified)
     dump_age = holland.get_time_since_dump()
     log_pos = holland.get_log_position()
-
 
     match = '\[ERROR\]'
     split = '[ERROR]'
@@ -231,9 +265,9 @@ if __name__ == '__main__':
 
     # check file is accessible
     if not os.access(log_file, os.R_OK):
-        print "status error unable to access file",log_file
+        print "status error unable to access file", log_file
         sys.exit(1)
-    
+
     # read info from tracking file
     if os.access(tracking_file, os.F_OK):
         try:
@@ -262,8 +296,7 @@ if __name__ == '__main__':
     else:
         read_from_pos = 0
         prev_date = 0
-    
-    
+
     # find lines that match provided regex
     matched_lines = []
     reasons = []
@@ -271,7 +304,7 @@ if __name__ == '__main__':
         log = open(log_file, 'r')
         log.seek(read_from_pos)
         for line in log.readlines():
-            if re.search(match,line) and not re.search(exclude,line):
+            if re.search(match, line) and not re.search(exclude, line):
                 matched_lines.append(line)
                 reasons.append(line.split(split)[1].strip())
     except:
@@ -279,7 +312,6 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         log.close()
-
 
     # Get first and last error messages
     if len(reasons) > 0:
@@ -289,29 +321,28 @@ if __name__ == '__main__':
         first_error = "none"
         last_error = "none"
 
-    # write new tracking file - wait until after log has been read in case 
+    # write new tracking file - wait until after log has been read in case
     # of other issues
     if log_modified > prev_date:
         try:
             tracking = open(tracking_file, 'w')
-            tracking.write(str(log_modified)+','+str(read_from_pos)+','
-                +str(log_pos))
+            tracking.write(str(log_modified) + ',' + str(read_from_pos) + ','
+                           + str(log_pos))
         except:
             print "status error unable to write to tracking file"
             sys.exit(1)
         else:
             tracking.close()
 
-
     # Finally check SQL
     sql = MySQL(backupset)
 
     print "status success holland checked"
-    print "metric log_age int64",log_age
-    print "metric dump_age int64",dump_age
-    print "metric error_count int64",len(matched_lines)
-    print "metric first_error string",first_error
-    print "metric last_error string",last_error
-    print "metric sql_creds_exist string",sql.check_creds()
-    print "metric sql_ping_succeeds string",sql.check_ping()
-    print "metric sql_status_succeeds string",sql.check_status()
+    print "metric log_age int64", log_age
+    print "metric dump_age int64", dump_age
+    print "metric error_count int64", len(matched_lines)
+    print "metric first_error string", first_error
+    print "metric last_error string", last_error
+    print "metric sql_creds_exist string", sql.check_creds()
+    print "metric sql_ping_succeeds string", sql.check_ping()
+    print "metric sql_status_succeeds string", sql.check_status()
