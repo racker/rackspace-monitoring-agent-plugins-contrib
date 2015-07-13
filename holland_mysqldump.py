@@ -160,7 +160,7 @@ class MySQL:
                             break
                     except:
                         ping = 0
-            elif self.user and self.password:
+            elif self.host:
                 ping = subprocess.call([
                     "/usr/bin/mysqladmin",
                     "-h", self.host,
