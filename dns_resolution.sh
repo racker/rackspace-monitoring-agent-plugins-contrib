@@ -4,6 +4,7 @@
 # Rackspace Cloud Monitoring Plugin to verify the current return status of DNS lookups.
 #
 # Copyright (c) 2014, Lindsey Anderson <lindsey.anderson@rackspace.com>
+# Copyright (c) 2015, Michael Burns <michael@mirwin.net>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,10 +37,12 @@
 #return new AlarmStatus(OK, 'DNS Lookups from this server are responsive.');
 
 
-RESOLVE_A="example.com"
-dig ${RESOLVE_A} > /dev/null
+RESOLVE=${1:-"example.com"}
+TYPE=${2:-"A"}
 
-if [[ $? -eq 9 || $? -eq 10 ]]; then
+res=$(dig +noall +answer ${RESOLVE} ${TYPE} | head -1)
+
+if [ -z "$res" ]; then
     echo "status critical dns_lookup unsuccessful"
     echo "metric dns_lookup string failed"
 else
