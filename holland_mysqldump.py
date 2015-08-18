@@ -28,26 +28,26 @@
 # Ensure file is executable (755)
 #
 # Example Criteria
-# if (metric['sql_ping_succeeds'] == 'false') { 
-#  return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL is not running.'); 
-# } 
-# if (metric['sql_creds_exist'] == 'false') { 
+# if (metric['sql_ping_succeeds'] == 'false') {
+#  return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL is not running.');
+# }
+# if (metric['sql_creds_exist'] == 'false') {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials file \
-#            does not exist.'); 
-# } 
-# if (metric['sql_status_succeeds'] == 'false') { 
+#            does not exist.');
+# }
+# if (metric['sql_status_succeeds'] == 'false') {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: MySQL credentials do \
-#            not authenticate.'); 
-# } 
-# if (metric['dump_age'] > 172800) { 
+#            not authenticate.');
+# }
+# if (metric['dump_age'] > 172800) {
 #   return new AlarmStatus(CRITICAL, 'holland-plugin: mysqldump file is older \
-#            than 2d.'); 
-# } 
-# if (metric['error_count'] > 0) { 
-#   return new AlarmStatus(CRITICAL, 'holland-plugin: #{last_error}.'); 
-# } 
+#            than 2d.');
+# }
+# if (metric['error_count'] > 0) {
+#   return new AlarmStatus(CRITICAL, 'holland-plugin: #{last_error}.');
+# }
 #
-# return new AlarmStatus(OK, 'holland-plugin: MySQL and Holland OK'); 
+# return new AlarmStatus(OK, 'holland-plugin: MySQL and Holland OK');
 
 import os
 import sys
@@ -143,7 +143,7 @@ class MySQL:
         else:
             return 'false'
 
-        # return true if ping succeeds
+    # return true if ping succeeds
     def check_ping(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
@@ -192,8 +192,8 @@ class MySQL:
                     try:
                         status = subprocess.call([
                             "/usr/bin/mysqladmin",
-                            "--defaults-file="+f,"status"], 
-                            stdout=DEVNULL, 
+                            "--defaults-file="+f,"status"],
+                            stdout=DEVNULL,
                             stderr=DEVNULL)
                         if status == 0:
                             break
@@ -222,7 +222,7 @@ class MySQL:
             return 'true'
         else:
             return 'false'
-        
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         backupset = sys.argv[1]
@@ -232,7 +232,7 @@ if __name__ == '__main__':
     name = 'zzz_holland_backup_'+backupset
 
     holland = Holland(backupset)
-    
+
     log_file = holland.get_log_file()
     log_modified = holland.get_log_mod_time()
     log_age = int(time.time() - log_modified)
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     if not os.access(log_file, os.R_OK):
         print "status error unable to access file",log_file
         sys.exit(1)
-    
+
     # read info from tracking file
     if os.access(tracking_file, os.F_OK):
         try:
@@ -286,8 +286,8 @@ if __name__ == '__main__':
     else:
         read_from_pos = 0
         prev_date = 0
-    
-    
+
+
     # find lines that match provided regex
     matched_lines = []
     reasons = []
@@ -313,7 +313,7 @@ if __name__ == '__main__':
         first_error = "none"
         last_error = "none"
 
-    # write new tracking file - wait until after log has been read in case 
+    # write new tracking file - wait until after log has been read in case
     # of other issues
     if log_modified > prev_date:
         try:
