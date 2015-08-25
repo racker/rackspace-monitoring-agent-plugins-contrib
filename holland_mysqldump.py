@@ -55,8 +55,8 @@ import re
 import time
 import subprocess
 
+
 def get_conf_value(config_file, key):
-    value = None
     try:
         config = open(config_file, 'r')
         for line in config.readlines():
@@ -99,8 +99,6 @@ class Holland:
             print "status error unable to retrieve log file modified time"
             sys.exit(1)
 
-
-
     def get_time_since_dump(self):
         dump = os.path.join(self.directory, self.backupset, 'newest')
         try:
@@ -128,8 +126,8 @@ class MySQL:
         self.creds_files = get_conf_value(self.backupset_config,
                                           'defaults-extra-file')
         if not self.creds_files:
-            self.creds_files =  get_conf_value(self.config_file,
-                                               'defaults-extra-file')
+            self.creds_files = get_conf_value(self.config_file,
+                                              'defaults-extra-file')
 
     # return true if credentials set
     def check_creds(self):
@@ -152,7 +150,7 @@ class MySQL:
                     try:
                         ping = subprocess.call([
                             "/usr/bin/mysqladmin",
-                            "--defaults-file="+f,"ping"],
+                            "--defaults-file="+f, "ping"],
                             stdout=DEVNULL,
                             stderr=DEVNULL)
                         if ping == 0:
@@ -162,7 +160,7 @@ class MySQL:
             elif self.user and self.password:
                 ping = subprocess.call([
                     "/usr/bin/mysqladmin",
-                    "-u",self.user,
+                    "-u", self.user,
                     "-p"+self.password,
                     "ping"],
                     stdout=DEVNULL,
@@ -192,7 +190,7 @@ class MySQL:
                     try:
                         status = subprocess.call([
                             "/usr/bin/mysqladmin",
-                            "--defaults-file="+f,"status"],
+                            "--defaults-file="+f, "status"],
                             stdout=DEVNULL,
                             stderr=DEVNULL)
                         if status == 0:
@@ -202,7 +200,7 @@ class MySQL:
             elif self.user and self.password:
                 status = subprocess.call([
                     "/usr/bin/mysqladmin",
-                    "-u",self.user,
+                    "-u", self.user,
                     "-p"+self.password,
                     "status"],
                     stdout=DEVNULL,
@@ -239,7 +237,6 @@ if __name__ == '__main__':
     dump_age = holland.get_time_since_dump()
     log_pos = holland.get_log_position()
 
-
     match = '\[ERROR\]'
     split = '[ERROR]'
     exclude = 'Warning: Skipping the data of table mysql.event'
@@ -255,7 +252,7 @@ if __name__ == '__main__':
 
     # check file is accessible
     if not os.access(log_file, os.R_OK):
-        print "status error unable to access file",log_file
+        print "status error unable to access file", log_file
         sys.exit(1)
 
     # read info from tracking file
@@ -287,7 +284,6 @@ if __name__ == '__main__':
         read_from_pos = 0
         prev_date = 0
 
-
     # find lines that match provided regex
     matched_lines = []
     reasons = []
@@ -295,7 +291,7 @@ if __name__ == '__main__':
         log = open(log_file, 'r')
         log.seek(read_from_pos)
         for line in log.readlines():
-            if re.search(match,line) and not re.search(exclude,line):
+            if re.search(match, line) and not re.search(exclude, line):
                 matched_lines.append(line)
                 reasons.append(line.split(split)[1].strip())
     except:
@@ -303,7 +299,6 @@ if __name__ == '__main__':
         sys.exit(1)
     else:
         log.close()
-
 
     # Get first and last error messages
     if len(reasons) > 0:
@@ -319,23 +314,22 @@ if __name__ == '__main__':
         try:
             tracking = open(tracking_file, 'w')
             tracking.write(str(log_modified)+','+str(read_from_pos)+','
-                +str(log_pos))
+                           +str(log_pos))
         except:
             print "status error unable to write to tracking file"
             sys.exit(1)
         else:
             tracking.close()
 
-
     # Finally check SQL
     sql = MySQL(backupset)
 
     print "status success holland checked"
-    print "metric log_age int64",log_age
-    print "metric dump_age int64",dump_age
-    print "metric error_count int64",len(matched_lines)
-    print "metric first_error string",first_error
-    print "metric last_error string",last_error
-    print "metric sql_creds_exist string",sql.check_creds()
-    print "metric sql_ping_succeeds string",sql.check_ping()
-    print "metric sql_status_succeeds string",sql.check_status()
+    print "metric log_age int64", log_age
+    print "metric dump_age int64", dump_age
+    print "metric error_count int64", len(matched_lines)
+    print "metric first_error string", first_error
+    print "metric last_error string", last_error
+    print "metric sql_creds_exist string", sql.check_creds()
+    print "metric sql_ping_succeeds string", sql.check_ping()
+    print "metric sql_status_succeeds string", sql.check_status()
