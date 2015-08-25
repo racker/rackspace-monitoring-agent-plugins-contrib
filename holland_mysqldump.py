@@ -119,9 +119,11 @@ class MySQL:
         if get_conf_value(self.backupset_config, 'user'):
             self.user = get_conf_value(self.backupset_config, 'user')
             self.password = get_conf_value(self.backupset_config, 'password')
+            self.host = get_conf_value(self.backupset_config, 'host')
         else:
             self.user = get_conf_value(self.config_file, 'user')
             self.password = get_conf_value(self.config_file, 'password')
+            self.host = get_conf_value(self.config_file, 'host')
 
         self.creds_files = get_conf_value(self.backupset_config,
                                           'defaults-extra-file')
@@ -145,7 +147,14 @@ class MySQL:
     def check_ping(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
-            if self.creds_files:
+            if self.host:
+                ping = subprocess.call([
+                    "/usr/bin/mysqladmin",
+                    "-h", self.host,
+                    "ping"],
+                    stdout=DEVNULL,
+                    stderr=DEVNULL)
+            elif self.creds_files:
                 for f in self.creds_files.split(','):
                     try:
                         ping = subprocess.call([
@@ -157,14 +166,6 @@ class MySQL:
                             break
                     except:
                         ping = 0
-            elif self.user and self.password:
-                ping = subprocess.call([
-                    "/usr/bin/mysqladmin",
-                    "-u", self.user,
-                    "-p"+self.password,
-                    "ping"],
-                    stdout=DEVNULL,
-                    stderr=DEVNULL)
             else:
                 ping = subprocess.call([
                     "/usr/bin/mysqladmin",
@@ -185,7 +186,25 @@ class MySQL:
     def check_status(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
-            if self.creds_files:
+            if self.user and self.password:
+                if self.host is None:
+                    status = subprocess.call([
+                        "/usr/bin/mysqladmin",
+                        "-u", self.user,
+                        "-p"+self.password,
+                        "status"],
+                        stdout=DEVNULL,
+                        stderr=DEVNULL)
+                else:
+                    status = subprocess.call([
+                        "/usr/bin/mysqladmin",
+                        "-h", self.host,
+                        "-u", self.user,
+                        "-p"+self.password,
+                        "status"],
+                        stdout=DEVNULL,
+                        stderr=DEVNULL)
+            elif self.creds_files:
                 for f in self.creds_files.split(','):
                     try:
                         status = subprocess.call([
@@ -197,14 +216,6 @@ class MySQL:
                             break
                     except:
                         status = 0
-            elif self.user and self.password:
-                status = subprocess.call([
-                    "/usr/bin/mysqladmin",
-                    "-u", self.user,
-                    "-p"+self.password,
-                    "status"],
-                    stdout=DEVNULL,
-                    stderr=DEVNULL)
             else:
                 status = subprocess.call([
                     "/usr/bin/mysqladmin",
