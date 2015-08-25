@@ -72,16 +72,16 @@ def get_conf_value(config_file, key):
 
 
 class Holland:
-    def __init__(self, backupset):
-        self.config_file = '/etc/holland/holland.conf'
-        self.backupset = backupset
+    def __init__(self, backupsets, config_file='/etc/holland/holland.conf'):
+        self.config_file = config_file
+        self.backupsets = backupsets
         self.directory = get_conf_value(self.config_file, 'backup_directory')
         self.log = get_conf_value(self.config_file, 'filename')
 
-        if not self.directory:
+        if self.directory is None:
             print "status error cannot set holland backup directory location"
             sys.exit(1)
-        elif not self.log:
+        elif self.log is None:
             print "status error cannot set holland log file location"
             sys.exit(1)
 
@@ -100,13 +100,17 @@ class Holland:
             sys.exit(1)
 
     def get_time_since_dump(self):
-        dump = os.path.join(self.directory, self.backupset, 'newest')
-        try:
-            current_time = time.time()
-            return int(current_time - os.path.getmtime(dump))
-        except OSError:
-            print "status error unable to retrieve dump file modified time"
-            sys.exit(1)
+        current_time = time.time()
+        dump_ages = []
+        for backupset in self.backupsets:
+            dump = os.path.join(self.directory, backupset, 'newest')
+            try:
+                dump_ages.append(int(current_time - os.path.getmtime(dump)))
+            except OSError:
+                print "status error unable to retrieve " + \
+                    backupset + " dump file modified time"
+                sys.exit(1)
+        return max(dump_ages)
 
     def get_log_file(self):
         return self.log
@@ -131,19 +135,19 @@ class MySQL:
             self.creds_files = get_conf_value(self.config_file,
                                               'defaults-extra-file')
 
-    # return true if credentials set
+    # return boolean True if credentials set
     def check_creds(self):
         if (self.user and self.password):
-            return 'true'
+            return True
         elif self.creds_files:
             for f in self.creds_files.split(','):
                 if os.access(f, os.F_OK):
-                    return 'true'
-            return 'false'
+                    return True
+            return False
         else:
-            return 'false'
+            return False
 
-    # return true if ping succeeds
+    # return boolean True if ping succeeds
     def check_ping(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
@@ -173,16 +177,16 @@ class MySQL:
                     stdout=DEVNULL,
                     stderr=DEVNULL)
         except:
-            return 'false'
+            return False
         else:
             DEVNULL.close()
 
         if ping == 0:
-            return 'true'
+            return True
         else:
-            return 'false'
+            return False
 
-    # return true if status succeeds
+    # return boolean True if status succeeds
     def check_status(self):
         try:
             DEVNULL = open(os.devnull, 'wb')
@@ -223,24 +227,32 @@ class MySQL:
                     stdout=DEVNULL,
                     stderr=DEVNULL)
         except:
-            return 'false'
+            return False
         else:
             DEVNULL.close()
 
         if status == 0:
-            return 'true'
+            return True
         else:
-            return 'false'
+            return False
 
 if __name__ == '__main__':
+
+    main_config_file = '/etc/holland/holland.conf'
     if len(sys.argv) > 1:
-        backupset = sys.argv[1]
+        backupsets = [sys.argv[1]]
     else:
-        backupset = 'default'
+        try:
+            backupsets = [item.strip() for item in get_conf_value(
+                main_config_file, 'backupsets').split(',')]
+        except AttributeError:
+            print "status error cannot set holland backupset"
+            sys.exit(1)
 
-    name = 'zzz_holland_backup_'+backupset
+    backupsets_str = '-'.join(backupsets)
+    name = 'zzz_holland_backup_'+backupsets_str
 
-    holland = Holland(backupset)
+    holland = Holland(backupsets, main_config_file)
 
     log_file = holland.get_log_file()
     log_modified = holland.get_log_mod_time()
@@ -333,7 +345,14 @@ if __name__ == '__main__':
             tracking.close()
 
     # Finally check SQL
-    sql = MySQL(backupset)
+    mysql_check_creds = []
+    mysql_check_ping = []
+    mysql_check_status = []
+    for backupset in backupsets:
+        sql = MySQL(backupset)
+        mysql_check_creds.append(sql.check_creds())
+        mysql_check_ping.append(sql.check_ping())
+        mysql_check_status.append(sql.check_status())
 
     print "status success holland checked"
     print "metric log_age int64", log_age
@@ -341,6 +360,9 @@ if __name__ == '__main__':
     print "metric error_count int64", len(matched_lines)
     print "metric first_error string", first_error
     print "metric last_error string", last_error
-    print "metric sql_creds_exist string", sql.check_creds()
-    print "metric sql_ping_succeeds string", sql.check_ping()
-    print "metric sql_status_succeeds string", sql.check_status()
+    print "metric sql_creds_exist string", str(
+        all(mysql_check_creds)).lower()
+    print "metric sql_ping_succeeds string", str(
+        all(mysql_check_ping)).lower()
+    print "metric sql_status_succeeds string", str(
+        all(mysql_check_status)).lower()
