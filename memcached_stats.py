@@ -42,7 +42,7 @@ def hit_percent(hits, misses):
 
 
 def fill_percent(used, total):
-    return float(used / total)
+    return 100 * float(used) / float(total)
 
 
 def main():
