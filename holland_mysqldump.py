@@ -122,11 +122,13 @@ class MySQL:
         self.backupset_config = "/etc/holland/backupsets/%s.conf" % backupset
         if get_conf_value(self.backupset_config, 'user'):
             self.user = get_conf_value(self.backupset_config, 'user')
-            self.password = get_conf_value(self.backupset_config, 'password')
+            self.password = get_conf_value(
+                self.backupset_config, 'password').strip('"\'')
             self.host = get_conf_value(self.backupset_config, 'host')
         else:
             self.user = get_conf_value(self.config_file, 'user')
-            self.password = get_conf_value(self.config_file, 'password')
+            self.password = get_conf_value(
+                self.config_file, 'password').strip('"\'')
             self.host = get_conf_value(self.config_file, 'host')
 
         self.creds_files = get_conf_value(self.backupset_config,
