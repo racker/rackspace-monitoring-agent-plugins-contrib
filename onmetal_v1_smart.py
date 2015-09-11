@@ -19,6 +19,7 @@
 # return new AlarmStatus(OK, 'Drive less than 80% through its expected life.')
 
 import subprocess
+import sys
 
 DEVICE = "/dev/sda"
 
@@ -32,6 +33,7 @@ SATADOM_PE_MAX = {
 
 def _fail(msg="Unknown Error"):
     print("status err {}".format(msg))
+    sys.exit(1)
 
 
 def _get_smartctl_attributes():
