@@ -9,14 +9,14 @@
 # Suggested alarm criteria:
 #
 # if (metric['percent_pe_cycles_used'] >= 1) {
-#     return new AlarmStatus(CRITICAL, 'Drive is beyond expected life.')
+#     return new AlarmStatus(CRITICAL, 'Drive is beyond expected life.');
 # }
 #
 # if (metric['percent_pe_cycles_used'] >= .8) {
-#     return new AlarmStatus(WARNING, 'Drive >= 80% of its expected life.')
+#     return new AlarmStatus(WARNING, 'Drive >= 80% of its expected life.');
 # }
 #
-# return new AlarmStatus(OK, 'Drive less than 80% through its expected life.')
+# return new AlarmStatus(OK, 'Drive less than 80% through its expected life.');
 
 import subprocess
 import sys
@@ -27,6 +27,7 @@ SATADOM_PE_MAX = {
     '32G MLC SATADOM': 3000,
     '7 PIN  SATA FDM': 3000,
     'Fastable SD 131 7': 3000,
+    'Fastable SD131 7': 3000,
     'SATADOM-SH TYPE C 3SE': 100000,
 }
 
