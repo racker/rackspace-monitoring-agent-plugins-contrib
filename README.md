@@ -51,6 +51,17 @@ The available types are:
 
 Each script should contain, just below the license header, in a comment, an example alarm criteria that can be used for the plugin. See the [Rackspace Cloud Monitoring Documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html#concepts-alarms-alarm-language) for how to write alarm criteria.
 
+## Submodules
+
+The rcbops/rpc-maas submodule consists of 24 custom plugins that have been used by either openstack or rackspace. These are older plugins for Icehouse/Juno, newer plugins for Kilo can be found at [rcbops/rpc-openstack](https://github.com/rcbops/rpc-openstack).
+
+You can pull the submodules with 
+```
+git pull --recurse-submodules
+git submodule update --recursive
+```
+
+
 ## License Header
 
  The exact content will depend on your chosen license, but we recommend BSD, Apache 2.0, or MIT Licenses. Regardless of license choice the header should contain the author's (or authors') name(s) and email address(es).
