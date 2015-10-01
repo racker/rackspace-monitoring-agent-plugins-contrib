@@ -1,3 +1,6 @@
 [submodule "contrib/rpc-maas"]
 	path = contrib/rpc-maas
 	url = https://github.com/rcbops/rpc-maas.git
+[submodule "contrib/uptime-monitor"]
+	path = contrib/uptime-monitor
+	url = https://github.com/racker/uptime-monitor.git
