@@ -1,3 +1,3 @@
-[submodule "rpc-maas"]
-	path = rpc-maas
+[submodule "contrib/rpc-maas"]
+	path = contrib/rpc-maas
 	url = https://github.com/rcbops/rpc-maas.git
