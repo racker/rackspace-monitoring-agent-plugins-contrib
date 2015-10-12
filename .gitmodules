@@ -4,3 +4,6 @@
 [submodule "contrib/uptime-monitor"]
 	path = contrib/uptime-monitor
 	url = https://github.com/racker/uptime-monitor.git
+[submodule "contrib/conveyer"]
+	path = contrib/conveyer
+	url = https://github.com/sam-falvo/conveyer.git
