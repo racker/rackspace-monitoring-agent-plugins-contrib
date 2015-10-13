@@ -7,3 +7,6 @@
 [submodule "contrib/conveyer"]
 	path = contrib/conveyer
 	url = https://github.com/sam-falvo/conveyer.git
+[submodule "contrib/rpc-openstack"]
+	path = contrib/rpc-openstack
+	url = https://github.com/rcbops/rpc-openstack.git
