@@ -107,7 +107,7 @@ class DockerService(object):
                 print 'metric network_rx_packets int64', s['network']['rx_packets']
                 print 'metric network_tx_bytes int64', s['network']['tx_bytes']
                 print 'metric network_tx_packets int64', s['network']['tx_packets']
-
+                sys.exit(0); 
         else:
             print 'status err failed to obtain docker container stats.'
             sys.exit(1)
