@@ -67,10 +67,10 @@ if [[ -x $NTPQ_BIN ]] && [[ -x $AWK_BIN ]]
       echo "metric active_sources uint32 ${count} sources"
       exit 0
     else
-      echo "status could not compute ntp offset: no reachable or active source"
+      echo "status err could not compute ntp offset: no reachable or active source"
     fi
   else
-    echo "status could not compute ntp offset: ntpq and/or awk could not be found"
+    echo "status err could not compute ntp offset: ntpq and/or awk could not be found"
 fi
 
 exit 1
