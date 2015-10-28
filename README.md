@@ -53,7 +53,11 @@ Each script should contain, just below the license header, in a comment, an exam
 
 ## Submodules
 
-The rcbops/rpc-maas submodule consists of 24 custom plugins that have been used by either openstack or rackspace. These are older plugins for Icehouse/Juno, newer plugins for Kilo can be found at [rcbops/rpc-openstack](https://github.com/rcbops/rpc-openstack).
+Submodules of repositories are stored in the contrib folder in this repo.  
+There are more plugins in that folder, some of these plugins have dependencies and their own readmes.  
+
+The contrib/rpc-maas submodule consists of 24 custom plugins that have been used by either openstack or rackspace. These are older plugins for Icehouse/Juno, 
+newer plugins for Kilo can be found at [rcbops/rpc-openstack](https://github.com/rcbops/rpc-openstack) or inside contrib/rpc-openstack/maas/plugins.
 
 You can pull the submodules with 
 ```
