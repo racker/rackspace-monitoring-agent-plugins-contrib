@@ -10,3 +10,6 @@
 [submodule "contrib/rpc-openstack"]
 	path = contrib/rpc-openstack
 	url = https://github.com/rcbops/rpc-openstack.git
+[submodule "contrib/gardener"]
+	path = contrib/gardener
+	url = https://github.com/creationix/gardener.git
