@@ -28,6 +28,7 @@ SATADOM_PE_MAX = {
     '7 PIN  SATA FDM': 3000,
     'Fastable SD 131 7': 3000,
     'Fastable SD131 7': 3000,
+    'SATADOM-SH TYPE': 100000,
     'SATADOM-SH TYPE C 3SE': 100000,
 }
 
