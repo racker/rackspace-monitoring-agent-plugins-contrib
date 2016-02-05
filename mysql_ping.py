@@ -7,6 +7,14 @@ returns Status OK if service is alive, else Status ERROR.
 
 NOTE: must have a /root/.my.cnf file with access to mysql
 
+Example criteria :
+
+if (metric['legacy_state'] != 'ok') {
+  return new AlarmStatus(CRITICAL, 'MySQL Server is NOT healthy.');
+}
+
+return new AlarmStatus(OK, 'MySQL Server is running.');
+
 """
 import sys
 import os
