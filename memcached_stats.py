@@ -15,6 +15,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+Minimal Example criteria:
+
+if (metric['legacy_state'] != 'ok') {
+  return new AlarmStatus(CRITICAL, 'memcache is NOT running.');
+}
+return new AlarmStatus(OK, 'memcache is running.');
+
 """
 import sys
 import telnetlib
