@@ -44,7 +44,7 @@
 #    return new AlarmStatus(WARNING, 'Varnish only has #{healthy_backends} healthy backend.');
 #}
 #
-# NOTE: if you are running Varnish < 4 comment out healty backends metrics (they don't work)
+# NOTE: if you are running Varnish < 4 comment out healthy backends metrics (they don't work)
 #
 
 return new AlarmStatus(OK, 'Varnish has \#{healthy_backends} backends.');
