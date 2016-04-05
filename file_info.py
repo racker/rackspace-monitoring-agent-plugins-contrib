@@ -46,8 +46,8 @@ def main():
         print "metric age int", age
         print "metric bytes int", size
         print "metric mode string", mode
-    except Exception e:
-        print "status error {}".format(str(e))
+    except Exception, e:
+        print "status err os.stat returned: {}".format(str(e))
 
 
 if __name__ == '__main__':
