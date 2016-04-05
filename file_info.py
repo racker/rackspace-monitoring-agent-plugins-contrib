@@ -47,7 +47,7 @@ def main():
         print "metric bytes int", size
         print "metric mode string", mode
     except Exception, e:
-        print "status err os.stat returned: {}".format(str(e))
+        print "status err Exception discovered: {}".format(str(e))
 
 
 if __name__ == '__main__':
