@@ -39,6 +39,10 @@
 #
 # Usage:
 # Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
+# 
+# It needs to be passed 2-3 params by the backup system:
+#
+# apikey datacenter [backupid]
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
@@ -61,8 +65,12 @@ function help {
 
 cat <<HELP
 
-SYNOPSIS:  ./cloudbackup_mon.sh apikey [backup-configuration-id]
-USAGE EXAMPLE: ./cloudbackup_mon.sh 4fdd665dfddwgfdvfnotreal
+SYNOPSIS:  ./cloudbackup_mon.sh apikey datecenter [backup-configuration-id]
+USAGE EXAMPLE: ./cloudbackup_mon.sh big_long_api_key iad
+
+'datacenter' should be one of [iad ord syd dfw hkg] and must be lowercase
+
+(sorry no support for 'lon' datacenter at this time)
 
 HELP
         exit 0
@@ -74,6 +82,12 @@ fi
 api_key=$1
 
 if [ -z "$2" ]; then
+	help
+else
+	dc=$2
+fi
+
+if [ -z "$3" ]; then
 	this_backup_conf_id=
 else
 	this_backup_conf_id=$2
@@ -82,19 +96,21 @@ fi
 
 # Get username and agentid
 username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' -e 's/,//g'`
-agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId | awk '{print $3}' | sed -e 's/,//g'`
+agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId\" | awk '{print $3}' | sed -e 's/,//g'`
 
 # Get token
-token=`curl -s -I -H "X-Auth-Key: $api_key" -H "X-Auth-User: $username" https://auth.api.rackspacecloud.com/v1.0 | grep -vi 'vary:' | grep -i X-Auth-Token |awk {'print $2'}`
+json=`curl --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens`
+token=`echo $json | python -m json.tool | grep token -A5 | grep id | cut -d\" -f4`
+url=$(echo $json | python -m json.tool | grep backup | grep $dc | cut -d\" -f4)
 
 # Get latest backup IDs
-backup_ids=`curl -s -H "X-Auth-Token: $token" https://backup.api.rackspacecloud.com/v1.0/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
+backup_ids=`curl -s -H "X-Auth-Token: $token" $url/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
 
 tmpfile=`mktemp`
 for backup_id in $backup_ids; do
 
   # Run report to see if backup was successful:
-  curl -s -H "X-Auth-Token: $token " https://backup.api.rackspacecloud.com/v1.0/backup/report/$backup_id | python -m json.tool > $tmpfile
+  curl -s -H "X-Auth-Token: $token " $url/backup/report/$backup_id | python -m json.tool > $tmpfile
 
   conf_id=`grep BackupConfigurationId < $tmpfile | sed -e 's/"BackupConfigurationId": //g' -e 's/,//g' -e 's/[ \t]*//g'`
   if [ "X$this_backup_conf_id" != "X" -a "X$conf_id" != "X$this_backup_conf_id" ]; then
