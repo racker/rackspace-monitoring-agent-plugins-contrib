@@ -30,6 +30,24 @@
 #
 # See https://github.com/robszumski/rackspace-monitoring-varnish for a readme
 # and more information
+#
+# this plugin can optinally print particular statistics, just pass them as args
+# varnish.sh cache_hit,cache_hitpass,cache_miss
+#
+#
+# Example Criteria
+# if (metric['healthy_backends'] < 1) {
+#    return new AlarmStatus(CRITICAL, 'Varnish doesnt have any backends!');
+#}
+#
+#if (metric['healthy_backends'] < 2) {
+#    return new AlarmStatus(WARNING, 'Varnish only has #{healthy_backends} healthy backend.');
+#}
+#
+# NOTE: if you are running Varnish < 4 comment out healthy backends metrics (they don't work)
+#
+
+return new AlarmStatus(OK, 'Varnish has \#{healthy_backends} backends.');
 
 # check if service is running
 SERVICE=varnish
