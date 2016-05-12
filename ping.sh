@@ -12,6 +12,9 @@
 
 # Usage:
 # Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
+# Configure Custom Plugin type check in Rackspace Intelligence
+# Specify only the script's name and the required parameter(s), e.g.:
+# ping.sh 192.168.0.1
 #
 # This plugin returns 4 metrics:
 #   - minimum, average, maximum: statistics returned by the GNU ping utility
