@@ -1,7 +1,7 @@
 # Rackspace Monitoring Agent Custom plugins
 
 This repository contains contributed custom plugins for the Rackspace Cloud
-Monitoring agent. For details about installing plugins, see [agent plugin check documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/appendix-check-types-agent.html#section-ct-agent.plugin).
+Monitoring agent. For details about installing plugins, see [agent plugin check documentation](https://developer.rackspace.com/docs/rackspace-monitoring/v1/developer-guide/#agent-plugin).
 
 ## How to Contribute
 
@@ -49,7 +49,7 @@ The available types are:
 
 ## Alarm Criteria
 
-Each script should contain, just below the license header, in a comment, an example alarm criteria that can be used for the plugin. See the [Rackspace Cloud Monitoring Documentation](http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html#concepts-alarms-alarm-language) for how to write alarm criteria.
+Each script should contain, just below the license header, in a comment, an example alarm criteria that can be used for the plugin. See the [Rackspace Cloud Monitoring Documentation](https://developer.rackspace.com/docs/rackspace-monitoring/v1/developer-guide/#alert-triggers-and-alarms-reference) for how to write alarm criteria.
 
 ## Submodules
 
