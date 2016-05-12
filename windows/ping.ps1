@@ -1,3 +1,29 @@
+<#
+
+# Rackspace Cloud Monitoring Plug-In
+# This is a plugin to monitor ICMP response times of hosts accessible by the server
+
+# ----------------------------------------------------------------------------
+# "THE BEER-WARE LICENSE" (Revision 42):
+# <zoltan.ver@gmail.com> wrote this file.  As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return.
+# ----------------------------------------------------------------------------
+
+# Usage:
+# Place plug-in into the folder C:\Program Files\Rackspace Monitoring\plugins
+# Configure Custom Plugin type check in Rackspace Intelligence
+# Specify only the script's name and the required parameter(s), e.g.:
+# ping.ps1 192.168.0.1
+#
+# This plugin returns 4 metrics:
+#   - minimum, average, maximum: statistics returned by the Windows ping utility
+#     in the format "Minimum = 0ms, Maximum = 17ms, Average = 4ms"
+#   - lost_packets : the percentage of the packets lost out of the number of probes
+#     sent (specifiied by the second parameter of this function or the -n command paramter)
+
+#>
+
 function CM-Ping {
  param($TargetHost, $count)
     $ping_command = "ping -n $count -w 30 $TargetHost"
