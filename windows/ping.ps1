@@ -1,26 +1,47 @@
 <#
 
 Rackspace Cloud Monitoring Plug-In
-This is a plugin to monitor ICMP response times of hosts accessible by the server
+
+This is a plugin to monitor ICMP round-trip times for hosts that are only
+reachable by the server
 
 ----------------------------------------------------------------------------
 "THE BEER-WARE LICENSE" (Revision 42):
-<zoltan.ver@gmail.com> wrote this file.  As long as you retain this notice you
-can do whatever you want with this stuff. If we meet some day, and you think
-this stuff is worth it, you can buy me a beer in return.
+<zoltan.ver@gmail.com> wrote this file.  As long as you retain this notice
+you can do whatever you want with this stuff. If we meet some day, and you
+think this stuff is worth it, you can buy me a beer in return.
 ----------------------------------------------------------------------------
 
 Usage:
-Place plug-in into the folder C:\Program Files\Rackspace Monitoring\plugins
-Configure Custom Plugin type check in Rackspace Intelligence
-Specify only the script's name and the required parameter(s), e.g.:
-ping.ps1 192.168.0.1
+
+- Place plug-in into the folder C:\Program Files\Rackspace Monitoring\plugins
+- Configure Custom Plugin type check in Rackspace Intelligence
+  Specify only the script's name and the required parameter(s), e.g.:
+  ping.ps1 192.168.0.1
+- Configure an Alert (optional, see example below)
+
 This plugin returns 4 metrics:
   - minimum, average, maximum: statistics returned by the Windows ping utility
   in the format "Minimum = 0ms, Maximum = 17ms, Average = 4ms"
   - lost_packets : the percentage of the packets lost out of the number of probes
   sent (specifiied by the second parameter of this function or the -n command paramter)
 
+Example alert:
+
+--- start copying after this line ---
+
+if (metric['average'] >= 15) {
+    return new AlarmStatus(CRITICAL, 'Average round-trip takes #{average}ms');
+}
+if (metric['lost_packets'] >= 30) {
+    return new AlarmStatus(CRITICAL, 'Packet loss is #{lost_packets}%');
+}
+if (metric['legacy_state'] != "ok") {
+    return new AlarmStatus(WARNING, 'Error: #{legacy_state}');
+}
+return new AlarmStatus(OK, 'All good');
+
+--- stop copying before this line ---
 #>
 
 function CM-Ping {
