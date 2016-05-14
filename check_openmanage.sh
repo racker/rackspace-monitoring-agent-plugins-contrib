@@ -45,7 +45,22 @@
 #   - by default, we're ignoring uncertified drive warnings.  Feel free to change that
 #     if it's important in your environment.
 
-opt_args="-b pdisk_cert=all --vdisk-critical"
+# Previous version of this wrapper used an opt_args argument.  But given
+# you can set arguments to pass via the Monitoring API, that has been
+# replaced with $@ below.  You might want to update your check with
+# something like the following:
+#
+# {
+#   "details": {
+#     "file": "check_openmanage.sh",
+#     "args": [
+#       "-b",
+#       "pdisk_cert=all",
+#       "-b",
+#       "ctrl_fw=all"
+#     ]
+#   }
+# }
 
 search=(/usr/lib64/nagios/plugins /usr/lib/nagios/plugins)
 
@@ -63,7 +78,7 @@ if [[ -z "${check_cmd}" ]]; then
 	fi
 fi
 
-report=$(${check_cmd} ${opt_args})
+report=$(${check_cmd} ${@})
 status=$?
 
 echo "status successfully ran check_openmanage wrapper plugin"
