@@ -141,7 +141,7 @@ class MySQL:
             return True
         elif self.creds_files:
             for f in self.creds_files.split(','):
-                if os.access(f, os.F_OK):
+                if os.access(os.path.expanduser(f), os.F_OK):
                     return True
             return False
         else:
