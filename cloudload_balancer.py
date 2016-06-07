@@ -78,11 +78,11 @@ def check_usage(instance_id, region):
     total_nodes = len(nodes)
 
     for node in nodes:
-        if node.status == 'ONLINE':
+        if node.status == 'ONLINE' and node.condition == 'ENABLED':
             online_nodes = online_nodes + 1
-        elif node.status == 'OFFLINE':
+        if node.status == 'OFFLINE' or node.condition == 'DISABLED':
             offline_nodes = offline_nodes + 1
-        elif node.status == 'DRAINING':
+        if node.status == 'DRAINING' or node.condition == 'DRAINING':
             draining_nodes = draining_nodes + 1
 
     print 'metric %s.total_nodes int %s' % (name, total_nodes)
