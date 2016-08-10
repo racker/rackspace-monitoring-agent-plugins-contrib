@@ -354,6 +354,15 @@ if __name__ == '__main__':
         mysql_check_ping.append(sql.check_ping())
         mysql_check_status.append(sql.check_status())
 
+    try:
+        all
+    except NameError:
+        def all(items):
+            for i in items:
+                if (not i):
+                    return False
+            return True
+
     print "status success holland checked"
     print "metric log_age int64", log_age
     print "metric dump_age int64", dump_age
