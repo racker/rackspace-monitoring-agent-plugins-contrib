@@ -354,6 +354,18 @@ if __name__ == '__main__':
         mysql_check_ping.append(sql.check_ping())
         mysql_check_status.append(sql.check_status())
 
+    # Python 2.4 (centos 5) doesn't have the 'all' func
+    # Define it if the system doesn't provide it
+    try:
+        all
+    except NameError:
+        def all(items):
+            """Returns true if all members of 'items' evaluate to True"""
+            for i in items:
+                if (not i):
+                    return False
+            return True
+
     print "status success holland checked"
     print "metric log_age int64", log_age
     print "metric dump_age int64", dump_age
