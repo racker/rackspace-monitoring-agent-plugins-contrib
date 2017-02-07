@@ -74,12 +74,10 @@ def get_stats(url):
 
     s = call_to_server(url, '/v2/stats/self')
 
-    # i've seen etcd return {"state":""}, so make sure the agent accepts it
-    if not s['state']:
-        s['state'] = "unknown"
-
     print STATUS_OK
-    print "metric state string", s['state']
+    if not s['state']:
+        s['state'] = 'leader'
+    print "metric state string", s.get('state', 'unknown')
     print "metric leader string", s['leaderInfo']['leader']
     print "metric recvAppendRequestCnt uint64", s['recvAppendRequestCnt']
     print "metric sendAppendRequestCnt uint64", s['sendAppendRequestCnt']
