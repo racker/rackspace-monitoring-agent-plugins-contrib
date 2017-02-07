@@ -28,46 +28,23 @@
 #  - time_connect: The total time, in seconds, that the full operation lasted
 #  - time_total: The time, in seconds, it took from the start until the TCP 
 #                connect to the remote host (or proxy) was completed
-#  - url: The last URL that was queried (if redirects occurred)
 #
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
-# if (metric['code'] != '200') {
+# if (metric['code'] != "200") {
 #  return new AlarmStatus(CRITICAL, '#{code} response received.  Expected 200.');
 # }
 # return new AlarmStatus(OK, '200 response received');
 #
 
-function extract_header()
-{
-    ret=$(echo "$1" | grep "$2:" | tail -1 | cut -d' ' -f 2- | tr -d '\n\r' )
-    [ -n "$ret" ] && echo -n $ret
-}
-
-response=$(curl -sS -L -f -I -w "Response-Code: %{response_code}\nTime-Connect: %{time_connect}\nTime-Total: %{time_total}\nURL-Effective: %{url_effective}\n" $1 2>&1)
+response=$(curl -sS -f -o /dev/null -I -w "%{response_code} %{time_connect} %{time_total}" $1 2>&1)
 
 if [ $? -eq 0 ]
 then
   echo "status ok connection made"
-  echo "metric code string $(extract_header "$response" Response-Code)"
-  echo "metric time_connect double $(extract_header "$response" Time-Connect) seconds"
-  echo "metric time_total double $(extract_header "$response" Time-Total) seconds"
-  echo "metric url string $(extract_header "$response" URL-Effective)"
-
-  etag=$(extract_header "$response" ETag)
-  [ -n "$etag" ] && echo "metric etag string $etag"
-
-  length=$(extract_header "$response" Content-Length)
-  [ -n "$length" ] && echo "metric content_length uint32 $length bytes"
-
-  modified=$(extract_header "$response" Last-Modified)
-  if [ -n "$modified" ]
-  then
-      modified_seconds=$(date --date="$modified" +"%s")
-      age=$(($(date +"%s") - $modified_seconds))
-      echo "metric page_age uint64 $age seconds"
-  fi
-
+  echo "metric code string $(echo $response | awk {'print $1'})"
+  echo "metric time_connect double $(echo $response | awk {'print $2'})"
+  echo "metric time_total double $(echo $response | awk {'print $3'})"
   exit 0
 else
   #remove statistics from our status line, only keep the error
