@@ -7,7 +7,7 @@
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <simon.vetter@runbox.com> wrote this file. As long as you retain this notice
 # you can do whatever you want with this stuff. If we meet some day, and you
-# think this stuff is worth it, you can buy me a beer in return
+# think this stuff is worth it, you can buy me a beer in return 
 # ----------------------------------------------------------------------------
 #
 # Usage:
@@ -51,7 +51,7 @@
 #     array as seen by the controller. I'd add it, but it seems hard to extract without
 #     megacli which I'm trying to stay away from. If you know of a way, please let me
 #     know.
-#
+#   
 #
 SMARTCTL=$(which smartctl)
 
