@@ -82,7 +82,7 @@ begin
   ctl=UNIXSocket.new(options[:sock])
   ctl.puts "show info"
 
-  while (line = ctl.gets) do
+  while (line = ctl.gets)
     if (line =~ /^CurrConns:/)
       line = line.split(":")
       metric("connections","int", line[1].to_i)
@@ -98,21 +98,19 @@ rescue
 end
 
 # get per-backend stats
-# note that the current maximum number of metrics a plugin can submit is 30.
-# if you have a lot of backends, you'll need to remove a metric or two in
-# the list below.
 begin
   ctl=UNIXSocket.new(options[:sock])
   ctl.puts "show stat"
 
-  while (line = ctl.gets) do
+  while (line = ctl.gets)
     if (line =~ /^[^#]\w+/)
       line = line.split(",")
       host = "#{line[0]}_#{line[1]}".gsub('-', '_').gsub('.', '_')
       metric("#{host}_request_rate","int",line[47].to_i)
       metric("#{host}_total_requests","gauge",line[49].to_i)
-      metric("#{host}_health_check_duration","int",line[35].to_i)
       metric("#{host}_current_queue","int",line[3].to_i)
+#     commented out to avoid generating more than 30 metrics
+#     metric("#{host}_health_check_duration","int",line[35].to_i)
     end
   end
   ctl.close
