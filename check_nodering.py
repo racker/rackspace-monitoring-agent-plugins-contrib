@@ -19,8 +19,7 @@ nodetooloutput = check_output([args.pathtonodetool + '/nodetool', '-h',
                                args.cassandrahost, '-p', args.portforcassandra, 'ring'])
 
 if nodetooloutput.find('?') >= 0:
-  print 'CRITICAL nodering not consistent'
+  print 'status critical nodering not consistent, find out which nodes have the "?" status'
   sys.exit(2)
 else:
-  print 'OK nodering consistent'
-  sys.exit(0)
+  print 'status ok nodering consistent'.exit(0)
