@@ -52,7 +52,8 @@ try:
     print 'status critical nodering not consistent, find out which nodes have the "?" status'
     sys.exit(2)
   else:
-    print 'status ok nodering consistent'.exit(0)
+    print 'status ok nodering consistent'
+    sys.exit(0)
 
 except:
   print 'status critical nodering command failed'
