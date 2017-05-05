@@ -25,36 +25,31 @@
 # It accepts three arguments, the path to the nodetool executable, the cassandra hostname
 # and the port on which to run on
 #
-# Returns 1 status:
-#   ok if the nodes don't have a '?' as a status
-#   critical if the nodes has a '?' as a status
+# Returns 1 metric, nodering_status:
+#   0 if the nodes don't have a '?' as a status
+#   1 if the nodes have a '?' as a status
 #
+#! /usr/bin/python
 
 from subprocess import check_output
 import sys
 import argparse
+
 parser = argparse.ArgumentParser(description='Run nodetool to check for inconsistent state')
-parser.add_argument('-p', '--port', dest='portforcassandra',
-                    default='9080', help='port that cassandra is running on')
-parser.add_argument('-t', '--tool', dest='pathtonodetool',
-                    default='/opt/cassandra/bin/',
-                    help='path to nodetool executable (ex /opt/cassandra/bin/)')
-parser.add_argument('-o', '--host', dest='cassandrahost',
-                    default='localhost', help='host cassandra is running on.')
-args = parser.parse_args()
+parser.add_argument('-p', '--port', dest='portforcassandra', default='9080', help='port that cassandra is running on')
+parser.add_argument('-t', '--tool', dest='pathtonodetool', default='/opt/cassandra/bin/', help='path to nodetool executable (ex /opt/cassandra/bin)')
+parser.add_argument('-o', '--host', dest='cassandrahost', default='localhost', help='host cassandra is running on.')
 
+args = parser.parse_args();
 
+nodetooloutput = check_output([args.pathtonodetool + '/nodetool', '-h',
+                                args.cassandrahost, '-p', args.portforcassandra, 'ring'])
 
-try:
-  nodetooloutput = check_output([args.pathtonodetool + '/nodetool', '-h',
-                                 args.cassandrahost, '-p', args.portforcassandra, 'ring'])
-  if nodetooloutput.find('?') >= 0:
-    print 'status critical nodering not consistent, find out which nodes have the "?" status'
-    sys.exit(2)
-  else:
-    print 'status ok nodering consistent'
-    sys.exit(0)
-
-except:
-  print 'status critical nodering command failed'
+if nodetooloutput.find('?') > 0 :
+  print 'status critical nodering not consistent'
+  print 'metric nodering_status uint32 1'
   sys.exit(2)
+else :
+  print 'status ok nodering in consistent state'
+  print 'metric nodering_status uint32 0'
+  sys.exit(0)
