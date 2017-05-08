@@ -45,7 +45,7 @@ args = parser.parse_args();
 nodetooloutput = check_output([args.pathtonodetool + '/nodetool', '-h',
                                 args.cassandrahost, '-p', args.portforcassandra, 'ring'])
 
-if nodetooloutput.find('?') > 0 :
+if nodetooloutput.find('?') >= 0 :
   print 'status critical nodering not consistent'
   print 'metric nodering_status uint32 1'
   sys.exit(2)
