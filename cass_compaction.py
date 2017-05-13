@@ -1,8 +1,7 @@
 #! /usr/bin/python
 #
 # Rackspace Cloud Monitoring Plug-In
-# Check the status of a cassandra nodering and make sure none of the nodes
-# have a '?' as a status.
+# Checks the number of compactions pending in a cassandra node.
 #
 # (c) 2017 Jim Wang <jim.wang@rackspace.com>
 # All Rights Reserved.
