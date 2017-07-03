@@ -103,6 +103,7 @@ class DockerService(object):
                 print 'metric cpu_user_mode_usage int64', s['cpu_stats']['cpu_usage']['usage_in_usermode']
                 print 'metric memory_max_usage int64', s['memory_stats']['max_usage']
                 print 'metric memory_total_cache int64', s['memory_stats']['stats']['total_cache']
+                print 'metric pids_current int64', s['pids_stats']['current']
                 if s.has_key('network'):
                     print_network_stat(s['network'])
                 elif s.has_key('networks'):
