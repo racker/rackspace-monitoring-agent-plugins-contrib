@@ -54,7 +54,7 @@
 # docker_stats_check.py -u unix://var/run/docker.sock
 #
 # The default URL is unix://var/run/docker.sock.
-# 
+#
 # The container can be name or id
 # docker_stats_check.py -u unix://var/run/docker.sock -c agitated_leakey
 # or
@@ -103,14 +103,28 @@ class DockerService(object):
                 print 'metric cpu_user_mode_usage int64', s['cpu_stats']['cpu_usage']['usage_in_usermode']
                 print 'metric memory_max_usage int64', s['memory_stats']['max_usage']
                 print 'metric memory_total_cache int64', s['memory_stats']['stats']['total_cache']
-                print 'metric network_rx_bytes int64', s['network']['rx_bytes']
-                print 'metric network_rx_packets int64', s['network']['rx_packets']
-                print 'metric network_tx_bytes int64', s['network']['tx_bytes']
-                print 'metric network_tx_packets int64', s['network']['tx_packets']
-                sys.exit(0); 
+                if s.has_key('network'):
+                    print_network_stat(s['network'])
+                elif s.has_key('networks'):
+                    tot = { "rx_bytes": 0, "rx_packets": 0, "tx_bytes": 0, "tx_packets": 0 }
+                    for ifname in s['networks']:
+                        tot['rx_bytes'] += s['networks'][ifname]['rx_bytes']
+                        tot['rx_packets'] += s['networks'][ifname]['rx_packets']
+                        tot['tx_bytes'] += s['networks'][ifname]['tx_bytes']
+                        tot['tx_packets'] += s['networks'][ifname]['tx_packets']
+                        print_network_stat(s['networks'][ifname], suffix='_' + ifname)
+                    print_network_stat(tot)
+
+                sys.exit(0);
         else:
             print 'status err failed to obtain docker container stats.'
             sys.exit(1)
+
+def print_network_stat(n, suffix=''):
+    print "metric network_rx_bytes%s int64 %d" % (suffix, n['rx_bytes'])
+    print "metric network_rx_packets%s int64 %d" % (suffix, n['rx_packets'])
+    print "metric network_tx_bytes%s int64 %d" % (suffix, n['tx_bytes'])
+    print "metric network_tx_packets%s int64 %d" % (suffix, n['tx_packets'])
 
 
 def main():
