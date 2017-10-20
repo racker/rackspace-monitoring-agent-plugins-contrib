@@ -36,15 +36,19 @@ def main():
         print "status err target does not exist"
         sys.exit(0)
 
-    print "status ok target exists"
-    details = os.stat(path)
-    age = int(time.time() - details.st_ctime)
-    size = details.st_size
-    mode = oct(details.st_mode & 0777)
+    try:
+        details = os.stat(path)
+        age = int(time.time() - details.st_ctime)
+        size = details.st_size
+        mode = oct(details.st_mode & 0777)
 
-    print "metric age int", age
-    print "metric bytes int", size
-    print "metric mode string", mode
+        print "status ok target exists"
+        print "metric age int", age
+        print "metric bytes int", size
+        print "metric mode string", mode
+    except Exception, e:
+        print "status err Exception discovered: {}".format(str(e))
+
 
 if __name__ == '__main__':
     main()

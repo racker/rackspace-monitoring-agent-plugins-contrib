@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# varnish.sh
+# varnish4.sh
 # Rackspace Cloud Monitoring Plugin to collect metrics from varnishstat.
 #
 # Copyright (c) 2013, Rob Szumski <rob@robszumski.com>
@@ -27,48 +27,30 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
-# See https://github.com/robszumski/rackspace-monitoring-varnish for a readme
-# and more information
-#
-# this plugin can optinally print particular statistics, just pass them as args
-# varnish.sh cache_hit,cache_hitpass,cache_miss
-#
-#
-# Example Criteria
-# if (metric['healthy_backends'] < 1) {
-#    return new AlarmStatus(CRITICAL, 'Varnish doesnt have any backends!');
-#}
-#
-#if (metric['healthy_backends'] < 2) {
-#    return new AlarmStatus(WARNING, 'Varnish only has #{healthy_backends} healthy backend.');
-#}
-#
-# NOTE: if you are running Varnish < 4 comment out healthy backends metrics (they don't work)
-#
-
-return new AlarmStatus(OK, 'Varnish has \#{healthy_backends} backends.');
 
 # check if service is running
 SERVICE=varnish
 VARNISHSTAT=/usr/bin/varnishstat
 VARNISHADM=/usr/bin/varnishadm
+HITSNAME=MAIN.cache_hit
+MISSESNAME=MAIN.cache_miss
 
 if P=$(pgrep $SERVICE | wc -l)
 then
-    echo "status $SERVICE is running ($P instances)"
+    echo "status success"
 else
-    echo "status $SERVICE is not running"
+    echo "status down"
 fi
 
 # output number of processes
 echo "metric processes int32 $P"
 
-# calculate hit percent
-hits=$($VARNISHSTAT -1 -f cache_hit | awk '{print $2}')
-connections=$($VARNISHSTAT -1 -f client_req| awk '{print $2}')
-hit_percent=$(echo "scale=8;($hits/$connections)" | bc | awk '{printf "%f", $1*100}')
-echo "metric hit_percent double "$hit_percent
+# calculate hit rate
+# cache_hit/(cache_hit + cache_miss)
+hits=$($VARNISHSTAT -1 -f $HITSNAME | awk '{print $2}')
+misses=$($VARNISHSTAT -1 -f $MISSESNAME | awk '{print $2}')
+hit_rate=$(echo "scale=8;($hits/($hits + $misses))" | bc | awk '{printf "%f", $1*100}')
+echo "metric hit_rate double" $hit_rate
 
 # calculate # of healthy backends
 healthy=$($VARNISHADM backend.list | grep -c "Healthy")

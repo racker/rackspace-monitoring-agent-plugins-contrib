@@ -1,20 +1,17 @@
 #!/usr/bin/python
-import re
-from datetime import datetime, timedelta
-import time
+from datetime import datetime
 import os
 
 
 def PopulateMetrics(log):
     clientRuns = []
-    response = []
     logFile = open(log, 'r')
     for line in logFile:
-        match = re.search('INFO: Chef Run complete in', line)
-        if match:
-            date = re.split('-|T|\+|\:', (line.split()[0])[1:][:-1])
+        if 'INFO: Chef Run complete in' in line:
+            date = line[1:11].split('-')
+            time = line[12:20].split(':')
             clientRuns.append(datetime(int(date[0]), int(date[1]), int(
-                date[2]), int(date[3]), int(date[4]), int(date[5]), 0))
+                date[2]), int(time[0]), int(time[1]), int(time[2]), 0))
             metrics['checkInDuration'] = int(float(line.split()[6]))
 
     metrics['timeSinceCheckIn'] = int(
@@ -25,11 +22,7 @@ def PopulateMetrics(log):
     metrics['processesAmount'] = 0
     pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
     for pid in pids:
-        match = re.search(
-            'chef-client',
-            open(os.path.join('/proc', pid, 'cmdline'), 'rb').read()
-        )
-        if match:
+        if 'chef-client' in open(os.path.join('/proc', pid, 'cmdline'), 'rb').read():
             metrics['processesAmount'] += 1
 
     if metrics['timeSinceCheckIn'] > 86400:
