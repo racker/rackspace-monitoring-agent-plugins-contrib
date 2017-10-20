@@ -100,7 +100,7 @@ agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId\" | awk '{print $3}'
 
 # Get token
 json=`curl --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens`
-token=`echo $json | python -m json.tool | grep token -A5 | grep id | cut -d\" -f4`
+token=`echo $json | python -m json.tool | grep token -A6 | grep id | cut -d\" -f4`
 url=$(echo $json | python -m json.tool | grep backup | grep $dc | cut -d\" -f4)
 
 # Get latest backup IDs
