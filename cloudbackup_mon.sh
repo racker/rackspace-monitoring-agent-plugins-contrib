@@ -47,19 +47,18 @@
 # The following is an example 'criteria' for a Rackspace Monitoring Alarm:
 #
 # if (metric['diagnostics'] != 'No errors') {
-# return new AlarmStatus(CRITICAL, 'Errors found during last backup run.');
+#   return new AlarmStatus(CRITICAL, 'Errors found during last Cloud Backup: #{diagnostics}');
 # }
 # if (metric['reason'] != 'Success') {
-# return new AlarmStatus(CRITICAL, 'Last backup was not successful.');
+#   return new AlarmStatus(CRITICAL, 'The last Cloud Backup was not successful.');
 # }
 # if (metric['state'] != 'Completed') {
-# return new AlarmStatus(CRITICAL, 'The last backup was not completed.');
+#   return new AlarmStatus(CRITICAL, 'The last Cloud Backup was not completed.');
 # }
 # if (metric['agent_running'] == 0) {
-# return new AlarmStatus(CRITICAL, 'Agent is not running.');
+#   return new AlarmStatus(CRITICAL, 'The Cloud Backup Agent is not running.');
 # }
-# 
-# return new AlarmStatus(OK, 'Cloud Backups Successful.');
+# return new AlarmStatus(OK, 'The last Cloud Backup was successful.');
 
 function help {
 
@@ -82,67 +81,69 @@ fi
 api_key=$1
 
 if [ -z "$2" ]; then
-	help
+  help
 else
-	dc=$2
+  dc=$2
 fi
 
 if [ -z "$3" ]; then
-	this_backup_conf_id=
+  this_backup_conf_id=
 else
-	this_backup_conf_id=$2
+  this_backup_conf_id=$3
 fi
 
 
 # Get username and agentid
-username=`cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' -e 's/,//g'`
-agentid=`cat /etc/driveclient/bootstrap.json | grep AgentId\" | awk '{print $3}' | sed -e 's/,//g'`
+username=$(cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' -e 's/,//g')
+agentid=$(cat /etc/driveclient/bootstrap.json | grep AgentId\" | awk '{print $3}' | sed -e 's/,//g')
 
 # Get token
-json=`curl --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens`
-token=`echo $json | python -m json.tool | grep token -A5 | grep id | cut -d\" -f4`
-url=$(echo $json | python -m json.tool | grep backup | grep $dc | cut -d\" -f4)
+region=$(echo "$dc" | tr "A-Z" "a-z")
+python_import="import sys,json;data=json.loads(sys.stdin.read());"
+json=$(curl -s --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens)
+token=$(echo "$json" | python -c "${python_import} print data['access']['token']['id']")
+url=$(echo "$json" | python -c "${python_import} print(''.join([y['publicURL'] for y in [ x['endpoints'] for x in data['access']['serviceCatalog'] if x['name'] == 'cloudBackup' ][0] if y['region'].lower() == '$region' ]))")
 
-# Get latest backup IDs
-backup_ids=`curl -s -H "X-Auth-Token: $token" $url/backup-configuration/system/$agentid | python -m json.tool |grep LastRunBackupReportId | awk '{print $2}' | sed -e 's/,//g'`
+# Get latest backup ID
+filter="${this_backup_conf_id:+if x['BackupConfigurationId'] == $this_backup_conf_id}"
+backup_config=$(curl -s -H "X-Auth-Token: $token" "$url/backup-configuration/system/$agentid" ) 
+backup_config_ids=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['BackupConfigurationId']) for x in data $filter]))"))
+backup_id=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['LastRunBackupReportId']) for x in data $filter]))"))
 
-tmpfile=`mktemp`
-for backup_id in $backup_ids; do
-
+if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   # Run report to see if backup was successful:
-  curl -s -H "X-Auth-Token: $token " $url/backup/report/$backup_id | python -m json.tool > $tmpfile
-
-  conf_id=`grep BackupConfigurationId < $tmpfile | sed -e 's/"BackupConfigurationId": //g' -e 's/,//g' -e 's/[ \t]*//g'`
-  if [ "X$this_backup_conf_id" != "X" -a "X$conf_id" != "X$this_backup_conf_id" ]; then
-    continue
-  fi
+  report=$(curl -s -H "X-Auth-Token: $token" "$url/backup/report/$backup_id")
+  
+  conf_id=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationId']")
 
   # Parse report
-  name=`grep BackupConfigurationName < $tmpfile | sed -e 's/"BackupConfigurationName": "//g' | sed -e 's/",//g' -e 's/^[ \t]*//'`
-  diagnostics=`grep Diagnostics < $tmpfile | sed -e 's/"Diagnostics": "//g' -e 's/",//g' -e 's/^[ \t]*//'`
-  numerrors=`grep NumErrors < $tmpfile | awk '{print $2}' | sed -e 's/,//g'`
-  reason=`grep Reason < $tmpfile | awk '{print $2}' | sed -e 's/,//g' -e 's/"//g'`
-  state=`grep State < $tmpfile | awk '{print $2}' | sed -e 's/,//g' -e 's/"//g'`
-
+  name=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationName']")
+  diagnostics=$(echo "$report" | python -c "${python_import} print data['Diagnostics']")
+  numerrors=$(echo "$report" | python -c "${python_import} print data['NumErrors']")
+  reason=$(echo "$report" | python -c "${python_import} print data['Reason']")
+  state=$(echo "$report" | python -c "${python_import} print data['State']")
+  
   # Return numeric value that can be checked when report is missing fields
   if [ "X$numerrors" = "X" ]; then
     numerrors=0
   fi
+elif [ ${#backup_id[@]} -gt 1 ]; then
+  diagnostics=$(echo "Specify the backup-configuration-id in the argument. Multiple backup configs found: [[ ${backup_config_ids[@]} ]]")
+else
+  diagnostics="No backups configurations or backups found"
+fi
 
-  echo "metric diagnostics string $diagnostics"
-  echo "metric numerrors int $numerrors"
-  echo "metric reason string $reason"
-  echo "metric state string $state"
-  echo "metric backup_id int $backup_id"
-  echo "metric backup_configuration_id int $conf_id"
-  echo "metric backup_configuration_name string $name"
-done
+diagnostics=$(echo "$diagnostics" | cut -c -128)
+echo "metric diagnostics string ${diagnostics:-Error: No data}"
+echo "metric numerrors int ${numerrors:--1}"
+echo "metric reason string ${reason:-Error: No data}"
+echo "metric state string ${state:-Error: No data}"
+echo "metric backup_id int ${backup_id:--1}"
+echo "metric backup_configuration_id int ${conf_id:--1}"
+echo "metric backup_configuration_name string ${name:-Error: No data}"
 
 # Confirm agent is running on server
-agent_check=`ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient"`
+agent_check=$(ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient")
 
 # Generate metrics
 echo "metric agent_running int $agent_check"
-
-# Clean up
-rm $tmpfile
