@@ -46,7 +46,7 @@ var hostPort = arguments[0];
 var objectName = arguments[1];
 var attribute = arguments[2];
 
-var u = new javax.management.remote.JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+hostPort+"/jmxrmi");
+var u = new javax.management.remote.JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + hostPort + "/jmxrmi");
 
 var conn;
 
@@ -67,7 +67,7 @@ for (i = 2; i < arguments.length; ++i) {
   try {
     var value = serverConn.getAttribute(name, attribute);
 
-    print("metric "+attribute+" gauge "+ value);
+    print("metric " + attribute + " gauge "+ value);
   } catch (e) {
     // attribute not found, no output
   }
