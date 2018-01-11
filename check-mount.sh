@@ -64,19 +64,10 @@ if [ -d $path ]; then
         flag_file_exists=1
         if [ -r $flag_file ]; then
           flag_file_readable=1
-          exit_status=0
-        else
-          exit_status=1
         fi
-      else
-        exit_status=1
       fi
     fi
-  else
-    exit_status=1
   fi
-else
-  exit_status=1
 fi
 
 echo "metric path string $path"
@@ -84,4 +75,4 @@ echo "metric flag_file string $2"
 echo "metric mounted int64 $mounted"
 echo "metric flag_file_exists int64 $flag_file_exists"
 echo "metric flag_file_readable int64 $flag_file_readable"
-exit $exit_status
+exit 0
