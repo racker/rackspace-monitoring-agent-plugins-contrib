@@ -58,6 +58,9 @@
 # if (metric['agent_running'] == 0) {
 #   return new AlarmStatus(CRITICAL, 'The Cloud Backup Agent is not running.');
 # }
+# if (metric['age'] > 129600) {
+#   return new AlarmStatus(CRITICAL, 'The last Cloud Backup is more than 36 hours old!');
+# }
 # return new AlarmStatus(OK, 'The last Cloud Backup was successful.');
 
 function help {
