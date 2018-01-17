@@ -122,6 +122,9 @@ if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   numerrors=$(echo "$report" | python -c "${python_import} print data['NumErrors']")
   reason=$(echo "$report" | python -c "${python_import} print data['Reason']")
   state=$(echo "$report" | python -c "${python_import} print data['State']")
+  start_time=$(echo "$report" | python -c "${python_import} import re; print int(int(re.search(\"\\d+\", data['StartTime']).group(0))/1000)")
+  now=$(date '+%s')
+  age=$(( $now - $start_time ))
   
   # Return numeric value that can be checked when report is missing fields
   if [ "X$numerrors" = "X" ]; then
@@ -141,6 +144,8 @@ echo "metric state string ${state:-Error: No data}"
 echo "metric backup_id int ${backup_id:--1}"
 echo "metric backup_configuration_id int ${conf_id:--1}"
 echo "metric backup_configuration_name string ${name:-Error: No data}"
+echo "metric start_time uint64 ${start_time}"
+echo "metric age uint64 ${age}"
 
 # Confirm agent is running on server
 agent_check=$(ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient")
