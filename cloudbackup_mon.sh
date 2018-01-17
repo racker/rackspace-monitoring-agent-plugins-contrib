@@ -144,8 +144,8 @@ echo "metric state string ${state:-Error: No data}"
 echo "metric backup_id int ${backup_id:--1}"
 echo "metric backup_configuration_id int ${conf_id:--1}"
 echo "metric backup_configuration_name string ${name:-Error: No data}"
-echo "metric start_time uint64 ${start_time}"
-echo "metric age uint64 ${age}"
+echo "metric start_time uint64 ${start_time:--1}"
+echo "metric age uint64 ${age:--1}"
 
 # Confirm agent is running on server
 agent_check=$(ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient")
