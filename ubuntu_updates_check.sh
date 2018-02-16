@@ -38,8 +38,15 @@ if [ -f "/var/run/reboot-required" ]; then
   REBOOT_REQUIRED="yes"
 fi
 
+if [ $((PENDING_OTHER+PENDING_SECURITY)) -gt 0 ]; then
+  UPGRADABLE_PACKAGES=$(apt list --upgradable 2>/dev/null | grep -v Listing | awk -F'/' '{print $1}' | paste -sd ',' -)
+fi
+
 echo "status Pending updates: security ${PENDING_SECURITY}, other: ${PENDING_OTHER}"
 
 echo "metric pending_security uint32 ${PENDING_SECURITY}"
 echo "metric pending_other uint32 ${PENDING_OTHER}"
 echo "metric reboot_required string ${REBOOT_REQUIRED}"
+echo "metric upgradable_packages string ${UPGRADABLE_PACKAGES}"
+
+exit 0
