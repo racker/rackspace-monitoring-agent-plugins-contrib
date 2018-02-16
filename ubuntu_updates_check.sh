@@ -41,7 +41,7 @@ fi
 if [ $((PENDING_OTHER+PENDING_SECURITY)) -gt 0 ]; then
   UPGRADABLE_PACKAGES=$(apt list --upgradable 2>/dev/null | grep -v Listing | awk -F'/' '{print $1}' | paste -sd ',' -)
 else
-  UPGRADABLE_PACKAGES="n/a"
+  UPGRADABLE_PACKAGES="none"
 fi
 
 echo "status Pending updates: security ${PENDING_SECURITY}, other: ${PENDING_OTHER}"
