@@ -109,8 +109,7 @@ begin
     metric("#{host}_request_rate", 'int', line[47].to_i)
     metric("#{host}_total_requests", 'gauge', line[49].to_i)
     metric("#{host}_current_queue", 'int', line[3].to_i)
-    #     commented out to avoid generating more than 30 metrics
-    #     metric("#{host}_health_check_duration","int",line[35].to_i)
+    metric("#{host}_health_check_duration","int",line[35].to_i)
   end
   ctl.close
 rescue
