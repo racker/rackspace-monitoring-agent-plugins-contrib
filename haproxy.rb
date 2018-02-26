@@ -33,12 +33,12 @@
 # the metricnames for these will vary based on your HAProxy cluster name.
 #
 
-def fail(status="Unknown failure")
+def fail(status = 'Unknown failure')
   puts "status #{status}"
   exit 1
 end
 
-def metric(name,type,value)
+def metric(name, type, value)
   @metrics[name] = {
     :type => type,
     :value => value
@@ -46,8 +46,8 @@ def metric(name,type,value)
 end
 
 def output_success
-  puts "status HAProxy is running and reporting metrics"
-  @metrics.each do |name,v|
+  puts 'status HAProxy is running and reporting metrics'
+  @metrics.each do |name, v|
     puts "metric #{name} #{v[:type]} #{v[:value]}"
   end
 end
@@ -56,7 +56,7 @@ begin
   require 'optparse'
   require 'socket'
 rescue
-  fail "Failed to load required ruby gems"
+  fail 'Failed to load required ruby gems'
 end
 
 @metrics = {}
@@ -65,7 +65,7 @@ options = {}
 args = ARGV.dup
 
 OptionParser.new do |o|
-  o.banner = "Usage: #{$0} [options]"
+  o.banner = "Usage: #{$PROGRAM_NAME} [options]"
   o.on('-s', '--stats-socket SOCKET', 'Specify the HAProxy stats socket') do |s|
     options[:sock] = s
   end
@@ -73,23 +73,23 @@ OptionParser.new do |o|
   o.parse!(args)
 end
 
-fail "You must specify the haproxy stats socket" if options[:sock].nil?
+fail 'You must specify the haproxy stats socket' if options[:sock].nil?
 
-pid = `pidof haproxy`.chomp.to_i || fail("HAProxy is not running")
+pid = `pidof haproxy`.chomp.to_i || fail('HAProxy is not running')
 
 # get global frontend stats
 begin
-  ctl=UNIXSocket.new(options[:sock])
-  ctl.puts "show info"
+  ctl = UNIXSocket.new(options[:sock])
+  ctl.puts 'show info'
 
-  while (line = ctl.gets) do
-    if (line =~ /^CurrConns:/)
-      line = line.split(":")
-      metric("connections","int", line[1].to_i)
+  while (line = ctl.gets)
+    if line =~ /^CurrConns:/
+      line = line.split(':')
+      metric('connections', 'int', line[1].to_i)
     end
-    if (line =~ /^ConnRate:/)
-      line = line.split(":")
-      metric("connection_rate","int", line[1].to_i)
+    if line =~ /^ConnRate:/
+      line = line.split(':')
+      metric('connection_rate', 'int', line[1].to_i)
     end
   end
   ctl.close
@@ -98,22 +98,18 @@ rescue
 end
 
 # get per-backend stats
-# note that the current maximum number of metrics a plugin can submit is 30.
-# if you have a lot of backends, you'll need to remove a metric or two in
-# the list below.
 begin
-  ctl=UNIXSocket.new(options[:sock])
-  ctl.puts "show stat"
+  ctl = UNIXSocket.new(options[:sock])
+  ctl.puts 'show stat'
 
-  while (line = ctl.gets) do
-    if (line =~ /^[^#]\w+/)
-      line = line.split(",")
-      host = "#{line[0]}_#{line[1]}".gsub('-', '_').gsub('.', '_')
-      metric("#{host}_request_rate","int",line[47].to_i)
-      metric("#{host}_total_requests","gauge",line[49].to_i)
-      metric("#{host}_health_check_duration","int",line[35].to_i)
-      metric("#{host}_current_queue","int",line[3].to_i)
-    end
+  while (line = ctl.gets)
+    next unless line =~ /^[^#]\w+/
+    line = line.split(',')
+    host = "#{line[0]}_#{line[1]}".tr('-', '_').tr('.', '_')
+    metric("#{host}_request_rate", 'int', line[47].to_i)
+    metric("#{host}_total_requests", 'gauge', line[49].to_i)
+    metric("#{host}_current_queue", 'int', line[3].to_i)
+    metric("#{host}_health_check_duration","int",line[35].to_i)
   end
   ctl.close
 rescue
