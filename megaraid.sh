@@ -31,11 +31,11 @@
 # if (metric['failed'] != 0) {
 #  return new AlarmStatus(CRITICAL, '#{failed} failed drive(s): #{report}');
 # }
-#
-# if (metric['prefail'] != 0) {
-#  return new AlarmStatus(WARNING, '#{prefail} prefail drive(s): #{report}');
-# }
-#
+
+if (metric['prefail'] != 0) {
+ return new AlarmStatus(WARNING, '#{prefail} prefail drive(s): #{report}');
+}
+
 # if (metric['unknown'] != 0) {
 #  return new AlarmStatus(WARNING, '#{unknown} unknown drive(s): #{report}');
 # }
