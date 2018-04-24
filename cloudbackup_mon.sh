@@ -39,7 +39,7 @@
 #
 # Usage:
 # Place plug-in in /usr/lib/rackspace-monitoring-agent/plugins
-# 
+#
 # It needs to be passed 2-3 params by the backup system:
 #
 # apikey datacenter [backupid]
@@ -109,14 +109,14 @@ url=$(echo "$json" | python -c "${python_import} print(''.join([y['publicURL'] f
 
 # Get latest backup ID
 filter="${this_backup_conf_id:+if x['BackupConfigurationId'] == $this_backup_conf_id}"
-backup_config=$(curl -s -H "X-Auth-Token: $token" "$url/backup-configuration/system/$agentid" ) 
+backup_config=$(curl -s -H "X-Auth-Token: $token" "$url/backup-configuration/system/$agentid" )
 backup_config_ids=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['BackupConfigurationId']) for x in data $filter]))"))
 backup_id=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['LastRunBackupReportId']) for x in data $filter]))"))
 
 if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   # Run report to see if backup was successful:
   report=$(curl -s -H "X-Auth-Token: $token" "$url/backup/report/$backup_id")
-  
+
   conf_id=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationId']")
 
   # Parse report
@@ -128,7 +128,7 @@ if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   start_time=$(echo "$report" | python -c "${python_import} import re; print int(int(re.search(\"\\d+\", data['StartTime']).group(0))/1000)")
   now=$(date '+%s')
   age=$(( $now - $start_time ))
-  
+
   # Return numeric value that can be checked when report is missing fields
   if [ "X$numerrors" = "X" ]; then
     numerrors=0
