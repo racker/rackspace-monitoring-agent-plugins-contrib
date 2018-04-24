@@ -95,6 +95,8 @@ else
   this_backup_conf_id=$3
 fi
 
+MAX_RETRIES=5
+
 
 # Get username and agentid
 username=$(cat /etc/driveclient/bootstrap.json | grep Username | awk '{print $3}' | sed -e 's/"//g' -e 's/,//g')
@@ -103,19 +105,52 @@ agentid=$(cat /etc/driveclient/bootstrap.json | grep AgentId\" | awk '{print $3}
 # Get token
 region=$(echo "$dc" | tr "A-Z" "a-z")
 python_import="import sys,json;data=json.loads(sys.stdin.read());"
-json=$(curl -s --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens)
+token_response_retry_count=-1
+function token_response() {
+  json=$(curl -s --data "{ \"auth\":{ \"RAX-KSKEY:apiKeyCredentials\":{ \"username\":\"${username}\", \"apiKey\":\"${api_key}\" } } }" -H "Content-Type: application/json" -X POST https://auth.api.rackspacecloud.com/v2.0/tokens);
+  token_response_retry_count=$(($token_response_retry_count + 1));
+  if [[ -z $json ]]; then
+    if [[ "$token_response_retry_count" -lt $MAX_RETRIES ]]; then
+      token_response
+    fi
+  fi
+}
+
+token_response
 token=$(echo "$json" | python -c "${python_import} print data['access']['token']['id']")
 url=$(echo "$json" | python -c "${python_import} print(''.join([y['publicURL'] for y in [ x['endpoints'] for x in data['access']['serviceCatalog'] if x['name'] == 'cloudBackup' ][0] if y['region'].lower() == '$region' ]))")
 
+
 # Get latest backup ID
 filter="${this_backup_conf_id:+if x['BackupConfigurationId'] == $this_backup_conf_id}"
-backup_config=$(curl -s -H "X-Auth-Token: $token" "$url/backup-configuration/system/$agentid" )
+backup_config_retry_count=-1
+function backup_config_response() {
+  backup_config=$(curl -s -H "X-Auth-Token: $token" "$url/backup-configuration/system/$agentid")
+  backup_config_retry_count=$(($backup_config_retry_count + 1));
+  if [[ -z $backup_config ]]; then
+    if [[ "$backup_config_retry_count" -lt $MAX_RETRIES ]]; then
+      backup_config_response
+    fi
+  fi
+}
+backup_config_response
 backup_config_ids=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['BackupConfigurationId']) for x in data $filter]))"))
 backup_id=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['LastRunBackupReportId']) for x in data $filter]))"))
 
+report_retry_count=-1
+function report_response() {
+  report=$(curl -s -H "X-Auth-Token: $token" "$url/backup/report/$backup_id")
+  report_retry_count=$(($report_retry_count + 1));
+  if [[ -z $report ]]; then
+    if [[ "$report_retry_count" -lt $MAX_RETRIES ]]; then
+      report_response
+    fi
+  fi
+}
+
 if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   # Run report to see if backup was successful:
-  report=$(curl -s -H "X-Auth-Token: $token" "$url/backup/report/$backup_id")
+  report_response
 
   conf_id=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationId']")
 
@@ -155,3 +190,4 @@ agent_check=$(ps ax | grep -v grep | grep -v process_mon | grep -c "driveclient"
 
 # Generate metrics
 echo "metric agent_running int $agent_check"
+echo "metric retry_count int $(($backup_config_retry_count + $token_response_retry_count + $report_retry_count))"
