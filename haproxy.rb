@@ -106,7 +106,6 @@ begin
     next unless line =~ /^[^#]\w+/
     line = line.split(',')
     host = "#{line[0]}_#{line[1]}".tr('-', '_').tr('.', '_')
-    metric("#{host}_request_rate", 'int', line[47].to_i)
     metric("#{host}_total_requests", 'gauge', line[49].to_i)
     metric("#{host}_current_queue", 'int', line[3].to_i)
     metric("#{host}_health_check_duration","int",line[35].to_i)
