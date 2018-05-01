@@ -60,7 +60,9 @@ rescue
 end
 
 @metrics = {}
-options = {}
+options = {
+    :limit => 10
+}
 
 args = ARGV.dup
 
@@ -68,6 +70,9 @@ OptionParser.new do |o|
   o.banner = "Usage: #{$PROGRAM_NAME} [options]"
   o.on('-s', '--stats-socket SOCKET', 'Specify the HAProxy stats socket') do |s|
     options[:sock] = s
+  end
+  o.on('-l', '--limit BACKEND_COUNT', 'Specify a limit of how many backends to report. Default is 10.') do |l|
+    options[:limit] = l.to_i
   end
   o.on_tail('-h', '--help', 'Show this message') { puts o; exit }
   o.parse!(args)
@@ -102,14 +107,18 @@ begin
   ctl = UNIXSocket.new(options[:sock])
   ctl.puts 'show stat'
 
+  i = 0
   while (line = ctl.gets)
     next unless line =~ /^[^#]\w+/
     line = line.split(',')
     host = "#{line[0]}_#{line[1]}".tr('-', '_').tr('.', '_')
-    metric("#{host}_request_rate", 'int', line[47].to_i)
-    metric("#{host}_total_requests", 'gauge', line[49].to_i)
-    metric("#{host}_current_queue", 'int', line[3].to_i)
-    metric("#{host}_health_check_duration","int",line[35].to_i)
+    if i < options[:limit]
+      metric("#{host}_request_rate", 'int', line[47].to_i)
+      metric("#{host}_total_requests", 'gauge', line[49].to_i)
+      metric("#{host}_current_queue", 'int', line[3].to_i)
+      metric("#{host}_health_check_duration","int",line[35].to_i)
+      i += 1
+    end
   end
   ctl.close
 rescue
