@@ -9,6 +9,10 @@
 # if (metric['cert_end_in'] <= 0) {
 #	return new AlarmStatus(CRITICAL, 'Certificate has expired on host')
 # }
+# if (metric['cert_end_in'] < 604800) {
+#   return new AlarmStatus(WARNING, 'Certificate expires in less than 1 week');
+# }
+# return new AlarmStatus(OK, 'Certificate valid for more than 1 week');
 
 # Copyright 2015 Rackspace
 
