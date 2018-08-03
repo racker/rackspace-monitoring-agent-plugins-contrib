@@ -46,13 +46,17 @@
 # return new AlarmStatus(CRITICAL, 'Process not running.');
 # }
 #
+# if (metric['process_age'] > 86400) {
+#   return new AlarmStatus(WARNING, 'Process has been running for over 24 hours.');
+# }
+#
 # return new AlarmStatus(OK, 'Process running normally.');
 
 function help {
 
 cat <<HELP
 
-SYNOPSIS:  ./process_mon.sh [process]... 
+SYNOPSIS:  ./process_mon.sh [process]...
 USAGE EXAMPLE: ./process_mon.sh lsync
 
 HELP
@@ -64,4 +68,14 @@ if [ -z "$1" ]; then
 fi
 
 process_check=`ps ax | grep -v grep | grep -v process_mon | grep -c "$1"`
+process_pid=`ps ax | grep -v grep | grep -v process_mon | grep "$1" | head -n 1 | awk '{print $1}'`
+if (( $process_check > 0 )); then
+  process_age=`ps -o etimes= -p "$process_pid"`
+  process_age=${process_age## }
+fi
+
 echo "metric process_mon int $process_check"
+echo "metric process_pid int ${process_pid:-0}"
+echo "metric process_age int ${process_age:-0}"
+
+exit 0
