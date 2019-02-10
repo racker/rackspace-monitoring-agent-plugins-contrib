@@ -195,7 +195,7 @@ class MySQL:
                     status = subprocess.call([
                         "/usr/bin/mysqladmin",
                         "-u", self.user,
-                        "-p"+self.password,
+                        "-p"+self.password.strip('"\''),
                         "status"],
                         stdout=DEVNULL,
                         stderr=DEVNULL)
@@ -204,7 +204,7 @@ class MySQL:
                         "/usr/bin/mysqladmin",
                         "-h", self.host,
                         "-u", self.user,
-                        "-p"+self.password,
+                        "-p"+self.password.strip('"\''),
                         "status"],
                         stdout=DEVNULL,
                         stderr=DEVNULL)
