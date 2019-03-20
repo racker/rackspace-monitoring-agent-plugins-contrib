@@ -23,15 +23,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-OUTPUT=$(/usr/lib/update-notifier/apt-check 2>&1)
+OUTPUT=$(apt list --upgradable 2>/dev/null)
 
 if [ $? -ne 0 ]; then
     echo "Failed to retrieve a number of pending updates"
     exit 100
 fi
 
-PENDING_OTHER=$(echo "${OUTPUT}" | cut -d ";" -f 1)
-PENDING_SECURITY=$(echo "${OUTPUT}" | cut -d ";" -f 2)
+PENDING_OTHER=$(echo "${OUTPUT}" | grep -v "Listing..." | grep -v -P "(,|/)$(lsb_release -cs)-security" | wc -l)
+PENDING_SECURITY=$(echo "${OUTPUT}" | grep -v "Listing..." | grep -P "(,|/)$(lsb_release -cs)-security" | wc -l)
 REBOOT_REQUIRED="no"
 
 if [ -f "/var/run/reboot-required" ]; then
