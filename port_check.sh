@@ -38,7 +38,7 @@ if [ $PROTOCOL = "udp" ]; then
     OPTIONS="-u"
 fi
 
-nc ${OPTIONS} ${IP} ${PORT} < /dev/null > /dev/null 2>&1
+nc -zw 1 ${OPTIONS} ${IP} ${PORT} < /dev/null > /dev/null 2>&1
 
 if [ $? -ne 0 ]; then
     echo "status Nothing listening on port ${IP}:${PORT} (${PROTOCOL})"
