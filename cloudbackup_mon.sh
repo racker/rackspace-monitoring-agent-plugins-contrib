@@ -117,9 +117,8 @@ function token_response() {
 }
 
 token_response
-token=$(echo "$json" | python -c "${python_import} print data['access']['token']['id']")
-url=$(echo "$json" | python -c "${python_import} print(''.join([y['publicURL'] for y in [ x['endpoints'] for x in data['access']['serviceCatalog'] if x['name'] == 'cloudBackup' ][0] if y['region'].lower() == '$region' ]))")
-
+token=$(echo "$json" | python3 -c "${python_import} print(data['access']['token']['id'])")
+url=$(echo "$json" | python3 -c "${python_import} print(''.join([y['publicURL'] for y in [ x['endpoints'] for x in data['access']['serviceCatalog'] if x['name'] == 'cloudBackup' ][0] if y['region'].lower() == '$region' ]))")
 
 # Get latest backup ID
 filter="${this_backup_conf_id:+if x['BackupConfigurationId'] == $this_backup_conf_id}"
@@ -134,8 +133,8 @@ function backup_config_response() {
   fi
 }
 backup_config_response
-backup_config_ids=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['BackupConfigurationId']) for x in data $filter]))"))
-backup_id=($(echo "$backup_config" | python -c "${python_import} print (' '.join([str(x['LastRunBackupReportId']) for x in data $filter]))"))
+backup_config_ids=($(echo "$backup_config" | python3 -c "${python_import} print (' '.join([str(x['BackupConfigurationId']) for x in data $filter]))"))
+backup_id=($(echo "$backup_config" | python3 -c "${python_import} print (' '.join([str(x['LastRunBackupReportId']) for x in data $filter]))"))
 
 report_retry_count=-1
 function report_response() {
@@ -152,15 +151,15 @@ if [ ${#backup_id[@]} -eq 1 -a "[$backup_id]" != "[None]" ]; then
   # Run report to see if backup was successful:
   report_response
 
-  conf_id=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationId']")
+  conf_id=$(echo "$report" | python3 -c "${python_import} print(data['BackupConfigurationId'])")
 
   # Parse report
-  name=$(echo "$report" | python -c "${python_import} print data['BackupConfigurationName']")
-  diagnostics=$(echo "$report" | python -c "${python_import} print data['Diagnostics']")
-  numerrors=$(echo "$report" | python -c "${python_import} print data['NumErrors']")
-  reason=$(echo "$report" | python -c "${python_import} print data['Reason']")
-  state=$(echo "$report" | python -c "${python_import} print data['State']")
-  start_time=$(echo "$report" | python -c "${python_import} import re; print int(int(re.search(\"\\d+\", data['StartTime']).group(0))/1000)")
+  name=$(echo "$report" | python3 -c "${python_import} print(data['BackupConfigurationName'])")
+  diagnostics=$(echo "$report" | python3 -c "${python_import} print(data['Diagnostics'])")
+  numerrors=$(echo "$report" | python3 -c "${python_import} print(data['NumErrors'])")
+  reason=$(echo "$report" | python3 -c "${python_import} print(data['Reason'])")
+  state=$(echo "$report" | python3 -c "${python_import} print(data['State'])")
+  start_time=$(echo "$report" | python3 -c "${python_import} import re; print(int(int(re.search(\"\\d+\", data['StartTime']).group(0))/1000))")
   now=$(date '+%s')
   age=$(( $now - $start_time ))
 
