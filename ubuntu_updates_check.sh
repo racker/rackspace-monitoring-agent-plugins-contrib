@@ -23,15 +23,47 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-OUTPUT=$(/usr/lib/update-notifier/apt-check 2>&1)
+OUTPUT=$(apt list --upgradable 2>/dev/null)
 
 if [ $? -ne 0 ]; then
     echo "Failed to retrieve a number of pending updates"
     exit 100
 fi
 
-PENDING_OTHER=$(echo "${OUTPUT}" | cut -d ";" -f 1)
-PENDING_SECURITY=$(echo "${OUTPUT}" | cut -d ";" -f 2)
+HELD=$(apt-mark showhold 2>/dev/null)
+
+# Remove any held packages from OUTPUT
+OLD_IFS=$IFS
+IFS=$'\n'
+OUT_ARR=($OUTPUT)
+HELD_ARR=($HELD)
+IFS=$OLD_IFS
+NEW_OUTPUT=""
+line_break='
+'
+
+for (( i=0; i<${#OUT_ARR[@]}; i++ )); do
+  line="${OUT_ARR[$i]}"
+  package=$(echo $line | awk -F'/' '{print $1}')
+  omit=0
+  for (( j=0; j<${#HELD_ARR[@]}; j++ )); do
+    held_package="${HELD_ARR[$j]}"
+    if [[ "$package" == "$held_package"  ]]; then
+      omit=1
+    fi
+  done
+  if [[ "$omit" == "0" ]]; then
+    if [[ "$i" == "0" ]]; then
+      NEW_OUTPUT="${NEW_OUTPUT}${line}"
+    else
+      NEW_OUTPUT="${NEW_OUTPUT}${line_break}${line}"
+    fi
+  fi
+done
+OUTPUT=$NEW_OUTPUT
+
+PENDING_OTHER=$(echo "${OUTPUT}" | grep -v "Listing..." | grep -v -P "(,|/)$(lsb_release -cs)-security" | wc -l)
+PENDING_SECURITY=$(echo "${OUTPUT}" | grep -v "Listing..." | grep -P "(,|/)$(lsb_release -cs)-security" | wc -l)
 REBOOT_REQUIRED="no"
 
 if [ -f "/var/run/reboot-required" ]; then
@@ -39,7 +71,7 @@ if [ -f "/var/run/reboot-required" ]; then
 fi
 
 if [ $((PENDING_OTHER+PENDING_SECURITY)) -gt 0 ]; then
-  UPGRADABLE_PACKAGES=$(apt list --upgradable 2>/dev/null | grep -v Listing | awk -F'/' '{print $1}' | paste -sd ',' -)
+  UPGRADABLE_PACKAGES=$(echo "${OUTPUT}" | grep -v Listing | awk -F'/' '{print $1}' | paste -sd ',' -)
 else
   UPGRADABLE_PACKAGES="none"
 fi

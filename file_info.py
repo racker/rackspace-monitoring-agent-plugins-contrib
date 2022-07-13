@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Rackspace Cloud Monitoring plugin to provide file/directory information.
 
@@ -28,26 +28,26 @@ import time
 
 def main():
     if len(sys.argv) != 2:
-        print "Requires a full path to the target passed as an argument"
+        print("Requires a full path to the target passed as an argument")
         sys.exit(0)
 
     path = sys.argv[1]
     if not os.path.exists(path):
-        print "status err target does not exist"
+        print("status err target does not exist")
         sys.exit(0)
 
     try:
         details = os.stat(path)
         age = int(time.time() - details.st_ctime)
         size = details.st_size
-        mode = oct(details.st_mode & 0777)
+        mode = oct(details.st_mode & 0o0777)
 
-        print "status ok target exists"
-        print "metric age int", age
-        print "metric bytes int", size
-        print "metric mode string", mode
-    except Exception, e:
-        print "status err Exception discovered: {}".format(str(e))
+        print("status ok target exists")
+        print("metric age int", age)
+        print("metric bytes int", size)
+        print("metric mode string", mode)
+    except Exception as e:
+        print("status err Exception discovered: {}".format(str(e)))
 
 
 if __name__ == '__main__':
